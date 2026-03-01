@@ -22,6 +22,7 @@ export const Header = ({ activePage, setPage }) => {
           <div className="nav-links">
             {[
               { id: "home", label: "Home" },
+              { id: "products", label: "Products" },
               { id: "support", label: "Support & FAQ" },
               { id: "track", label: "Track Request" },
             ].map(item => (
