@@ -7,73 +7,102 @@ import { ChatWindow } from "../components/ChatWindow";
 const FAQS = [
   {
     id: 1, category: "warranty",
-    question: "How do I check if my product is still under warranty?",
-    answer: "You can check your warranty status by entering your serial number on our warranty portal. Alternatively, refer to your original purchase receipt — standard warranty covers 1 year for parts and 2 years for the compressor (applicable to AC units).",
-    steps: ["Locate your serial number on the product label (usually at the back or bottom)", "Visit the warranty checker on our website", "Enter your serial number and purchase date", "Your warranty status and expiry will be displayed instantly"]
+    question: "What warranty do Fiamma / ELBA products come with?",
+    answer: "Warranty coverage varies by product model. Most ELBA appliances come with 12 to 60 months of manufacturer's warranty from the date of purchase. The exact warranty period is stated on your purchase receipt and on the product listing. Air conditioners (e.g. AC-5500) carry up to 60 months warranty, while entry-level models carry 12 months.",
+    steps: null
   },
   {
     id: 2, category: "warranty",
-    question: "What is covered under the standard warranty?",
-    answer: "Our standard warranty covers manufacturing defects and component failures under normal usage conditions. It does not cover physical damage, water damage, improper installation, or consumable parts.",
+    question: "Is my product still under warranty?",
+    answer: "Your warranty status can be checked by providing your Order ID or registered email address to our AI agent or support team. Warranty is calculated from your purchase date. If your warranty is still active, all repairs and servicing are carried out at no charge.",
     steps: null
   },
   {
     id: 3, category: "repair",
-    question: "My washing machine shows Error Code E3 — what does it mean?",
-    answer: "Error E3 typically indicates a motor or drum bearing issue. This requires a technician inspection. Do not attempt to force-start the machine as it may worsen the damage.",
-    steps: ["Power off the machine and unplug it", "Wait 10 minutes, then restart", "If E3 persists, do NOT restart again", "Submit a service request through this portal", "A technician will be scheduled within 24–48 hours"]
+    question: "How do I raise a support or repair request?",
+    answer: "You can raise a support ticket via our AI agent (Fia) on the Fiamma website or app, or by contacting our support hotline. Provide your Order ID and a description of the issue. A ticket will be created and our team will follow up within the stated SLA timeframe.",
+    steps: null
   },
   {
     id: 4, category: "repair",
-    question: "My air conditioner is not cooling. What should I check?",
-    answer: "Before requesting a technician, try these basic checks to resolve the issue without a service call.",
-    steps: ["Check that the set temperature is lower than room temperature", "Clean or replace the air filter (dusty filters reduce cooling by 30%)", "Ensure all room doors and windows are closed", "Check if the outdoor unit fan is spinning", "If none of these help, submit a repair request"]
-  },
-  {
-    id: 5, category: "repair",
-    question: "How do I request a home repair service?",
-    answer: "You can request a home service visit by submitting a support ticket on this portal. You'll need your product serial number and a description of the issue. A technician will be assigned within 1–2 working days.",
+    question: "How long does it take to respond to a support ticket?",
+    answer: "Response times depend on ticket priority. High priority tickets (safety-related issues) are responded to within 4 hours. Medium priority tickets receive a response within 1 business day. Low priority tickets are handled within 3 business days.",
     steps: null
   },
   {
-    id: 6, category: "parts",
-    question: "How long does it take for spare parts to arrive?",
-    answer: "Spare part availability varies by model. Common parts are usually in stock and delivered to the technician within 2–3 working days. Rare parts may take 7–14 working days. You'll receive real-time status updates via SMS and email.",
+    id: 5, category: "purchase",
+    question: "Where can I buy Fiamma / ELBA products?",
+    answer: "ELBA products are available through authorised Fiamma dealers nationwide, our official website at www.fiamma.com.my, and selected retail partners. Purchase from authorised channels to ensure warranty validity.",
     steps: null
   },
   {
-    id: 7, category: "parts",
+    id: 6, category: "general",
+    question: "Are spare parts and accessories available for my product?",
+    answer: "Yes, genuine spare parts and accessories are available for most ELBA products. Contact our support team with your product model and the part you require. We recommend using only genuine Fiamma-approved parts to maintain warranty validity.",
+    steps: null
+  },
+  {
+    id: 7, category: "general",
     question: "Can I purchase spare parts directly?",
     answer: "Spare parts are available through our authorised service centres and selected dealers. For safety and warranty compliance, we recommend installation by our certified technicians.",
     steps: null
   },
   {
-    id: 8, category: "tracking",
-    question: "How do I track my service request status?",
-    answer: "You can track your service ticket status by entering your ticket number or serial number in the tracking section. You'll see real-time updates from submission to job completion.",
-    steps: ["Go to 'Track My Request' on the menu", "Enter your Ticket ID (e.g. TK-2841) or Serial Number", "View current status, assigned technician, and expected date"]
-  },
-  {
-    id: 9, category: "billing",
-    question: "Will there be any charges for a warranty repair?",
-    answer: "No — if your product is within the warranty period and the issue is covered under warranty terms, there are no charges for parts or labour. You may be charged for services outside warranty scope.",
+    id: 8, category: "general",
+    question: "Do your products come with installation services?",
+    answer: "Yes, professional installation services are available for select products such as built-in ovens and air conditioners at an additional fee. Ask our support team or dealer for details at the time of purchase.",
     steps: null
   },
   {
-    id: 10, category: "billing",
-    question: "What payment methods are accepted for out-of-warranty repairs?",
-    answer: "We accept cash, credit/debit card, online banking (FPX), and e-wallets (Touch 'n Go, GrabPay, Boost) at the time of service completion.",
+    id: 9, category: "warranty",
+    question: "What is covered under the warranty?",
+    answer: "The warranty covers manufacturing defects, faulty components, and internal hardware failures under normal use conditions. It does not cover physical damage caused by accidents, misuse, unauthorised repairs, power surges, or cosmetic damage such as scratches and dents.",
     steps: null
   },
+  {
+    id: 10, category: "warranty",
+    question: "My warranty has expired. Can I still get it repaired?",
+    answer: "Yes, Fiamma offers out-of-warranty repair services at a service fee. Our support team will assess the issue and provide a cost estimate before any repair work begins. You will need to confirm your acceptance of the fee before we proceed.",
+    steps: null
+  },
+  {
+    id: 11, category: "warranty",
+    question: "How do I register my product for warranty?",
+    answer: "You can register your product by visiting www.fiamma.com.my or by contacting our customer support team with your purchase receipt and product serial number. Registration ensures faster processing for future warranty claims.", 
+    steps: null
+  },
+  {
+    id: 12, category: "repair",
+    question: "Can I check my support ticket status?",
+    answer: "Yes. Provide your ticket ID (e.g. TKT-XXXXXX) or your registered email address to the AI agent and it will retrieve your current ticket status, including whether it is Open, In Progress, or Resolved.",
+    steps: null
+  },
+  {
+    id: 13, category: "repair",
+    question: "I submitted a ticket but have more information to add. What should I do?",
+    answer: "You can update an existing ticket by telling our AI agent your ticket ID and providing the additional information. The agent will append a note to your existing ticket so our support team has the complete picture.",
+    steps: null
+  },
+  {
+    id: 14, category: "purchase",
+    question: "How long does delivery take?",
+    answer:"Standard delivery within Peninsular Malaysia takes 3–5 business days. East Malaysia (Sabah & Sarawak) deliveries may take 7–10 business days. You will receive a tracking number upon dispatch.",
+    steps: null
+  },
+  {
+    id: 15, category: "purchase",
+    question: "What is your return policy?",
+    answer: "Products may be returned or exchanged within 7 days of purchase if they are in their original condition with packaging, receipt, and accessories. For defective products, please raise a support ticket and our team will arrange for inspection and replacement if applicable.",
+    steps: null
+  }
 ];
 
 const FAQ_CATEGORIES = [
-  { id: "all", label: "All Topics", icon: BookOpen, count: 16 },
-  { id: "warranty", label: "Warranty", icon: Shield, count: 4 },
-  { id: "repair", label: "Repair & Service", icon: Wrench, count: 5 },
-  { id: "parts", label: "Spare Parts", icon: Package, count: 3 },
-  { id: "tracking", label: "Track Request", icon: Truck, count: 2 },
-  { id: "billing", label: "Billing", icon: CreditCard, count: 2 },
+  { id: "all", label: "All Topics", icon: BookOpen, count: 15 },
+  { id: "warranty", label: "Warranty & Repairs", icon: Shield, count: 5 },
+  { id: "repair", label: "Support Tickets & Service Requests", icon: Wrench, count: 4 },
+  { id: "purchase", label: "Purchase, Delivery & Returns", icon: CreditCard, count: 3 },
+  { id: "general", label: "General Product Questions", icon: Truck, count: 3 },
 ];
 
 export const SupportPage = () => {

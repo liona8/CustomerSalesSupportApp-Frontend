@@ -1280,6 +1280,7 @@ h1, h2, h3 { font-family: 'Fraunces', serif; line-height: 1.2; }
   cursor: pointer;
   transition: all var(--transition);
   z-index: 2;
+  padding: 0;
 }
 .prod-wishlist-btn:hover, .prod-wishlist-btn.active { color: #e11d48; border-color: #fecdd3; background: #fff1f2; }
 .prod-image {
@@ -1521,7 +1522,6 @@ h1, h2, h3 { font-family: 'Fraunces', serif; line-height: 1.2; }
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  padding: 0;
 }
 .prod-qty-btn {
   background: var(--bg-subtle);
@@ -1534,6 +1534,7 @@ h1, h2, h3 { font-family: 'Fraunces', serif; line-height: 1.2; }
   color: var(--text-secondary);
   cursor: pointer;
   transition: background var(--transition);
+  padding: 0;
 }
 .prod-qty-btn:hover { background: var(--bg-hover); }
 .prod-qty-val {

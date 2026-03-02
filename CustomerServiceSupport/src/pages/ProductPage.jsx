@@ -1,99 +1,100 @@
 //src/pages/ProductPage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, SlidersHorizontal, Heart, Star, Eye, Package } from "lucide-react";
 import { ProductDetail } from "../components/ProductDetail";
 import '../style.css';
+import { productService } from "../service/product";
 
-const PRODUCTS = [
-  {
-    id: "WM-7800", name: "FrontLoad Pro 7800", category: "washing-machine",
-    tagline: "Intelligent wash, gentle on every fabric",
-    price: "RM 2,499", oldPrice: "RM 2,899", badge: "Best Seller",
-    rating: 4.8, reviews: 324, inStock: true,
-    color: "icon-blue",
-    specs: { capacity: "8 kg", energy: "5-Star", noise: "42 dB", programs: "16", spin: "1400 RPM" },
-    features: ["AI Fabric Sensor", "Steam Wash", "Self-Clean Drum", "Wi-Fi Control", "Child Lock"],
-    warranty: "2 Years (Parts & Labour)",
-    image: "🫧",
-  },
-  {
-    id: "WM-5500", name: "TopLoad Eco 5500", category: "washing-machine",
-    tagline: "Economical, reliable, everyday performance",
-    price: "RM 1,299", oldPrice: null, badge: "New",
-    rating: 4.5, reviews: 187, inStock: true,
-    color: "icon-teal",
-    specs: { capacity: "7 kg", energy: "4-Star", noise: "48 dB", programs: "10", spin: "1200 RPM" },
-    features: ["Fuzzy Logic", "Soak Mode", "Gentle Drum", "Auto-Balance"],
-    warranty: "1 Year (Parts & Labour)",
-    image: "🌀",
-  },
-  {
-    id: "AC-5500", name: "CoolMax Inverter 5500", category: "air-conditioner",
-    tagline: "Whisper-quiet cooling, all day comfort",
-    price: "RM 1,799", oldPrice: "RM 2,100", badge: "Hot Deal",
-    rating: 4.7, reviews: 512, inStock: true,
-    color: "icon-purple",
-    specs: { btu: "12,000 BTU", energy: "5-Star", noise: "19 dB", coverage: "450 sq ft", compressor: "Inverter" },
-    features: ["Auto-Cleaning", "4D Airflow", "Sleep Mode", "PM 2.5 Filter", "Wi-Fi Smart"],
-    warranty: "5 Years Compressor, 2 Years Parts",
-    image: "❄️",
-  },
-  {
-    id: "AC-3300", name: "AirLite Standard 3300", category: "air-conditioner",
-    tagline: "Affordable cooling for small spaces",
-    price: "RM 999", oldPrice: null, badge: null,
-    rating: 4.3, reviews: 98, inStock: true,
-    color: "icon-teal",
-    specs: { btu: "9,000 BTU", energy: "3-Star", noise: "26 dB", coverage: "280 sq ft", compressor: "Non-Inverter" },
-    features: ["Timer Function", "Auto Restart", "Dehumidify Mode", "Sleep Mode"],
-    warranty: "1 Year (Parts & Labour)",
-    image: "🌬️",
-  },
-  {
-    id: "RF-3300", name: "FreshKeep 2-Door 3300", category: "refrigerator",
-    tagline: "Keep everything fresher, longer",
-    price: "RM 1,599", oldPrice: "RM 1,850", badge: "Popular",
-    rating: 4.6, reviews: 276, inStock: true,
-    color: "icon-green",
-    specs: { capacity: "340L", energy: "3-Star", noise: "38 dB", freezer: "80L", defrost: "Auto" },
-    features: ["No-Frost Technology", "Humidity Control", "Odour Filter", "Turbo Cool", "Tempered Glass Shelves"],
-    warranty: "2 Years (Parts), 5 Years Compressor",
-    image: "🧊",
-  },
-  {
-    id: "RF-4500", name: "FrenchDoor Elite 4500", category: "refrigerator",
-    tagline: "Stylish, spacious, and smart",
-    price: "RM 3,299", oldPrice: null, badge: "Premium",
-    rating: 4.9, reviews: 64, inStock: false,
-    color: "icon-rose",
-    specs: { capacity: "520L", energy: "5-Star", noise: "34 dB", freezer: "140L", defrost: "Auto" },
-    features: ["Twin Cooling System", "Water Dispenser", "Smart Diagnosis", "Door Alarm", "Sabbath Mode"],
-    warranty: "2 Years (Parts), 10 Years Compressor",
-    image: "🏠",
-  },
-  {
-    id: "DW-2200", name: "CleanSweep Dishwasher 2200", category: "dishwasher",
-    tagline: "Spotless results, zero effort",
-    price: "RM 2,199", oldPrice: "RM 2,499", badge: null,
-    rating: 4.4, reviews: 143, inStock: true,
-    color: "icon-orange",
-    specs: { capacity: "13 sets", energy: "4-Star", noise: "44 dB", programs: "8", drying: "Heat Dry" },
-    features: ["Half-Load Option", "Intensive Zone", "Delay Start", "Auto Door Open", "Stainless Interior"],
-    warranty: "2 Years (Parts & Labour)",
-    image: "✨",
-  },
-  {
-    id: "MW-1100", name: "QuickHeat Microwave 1100", category: "microwave",
-    tagline: "Fast, even, and perfectly heated every time",
-    price: "RM 399", oldPrice: "RM 499", badge: "Value Pick",
-    rating: 4.2, reviews: 389, inStock: true,
-    color: "icon-blue",
-    specs: { power: "1100W", capacity: "28L", noise: "50 dB", programs: "12", display: "LED" },
-    features: ["Auto Cook Menus", "Defrost by Weight", "Child Lock", "Keep Warm", "Easy Clean Interior"],
-    warranty: "1 Year (Parts & Labour)",
-    image: "📡",
-  },
-];
+// const PRODUCTS = [
+//   {
+//     id: "WM-7800", name: "FrontLoad Pro 7800", category: "washing-machine",
+//     tagline: "Intelligent wash, gentle on every fabric",
+//     price: "RM 2,499", oldPrice: "RM 2,899", badge: "Best Seller",
+//     rating: 4.8, reviews: 324, inStock: true,
+//     color: "icon-blue",
+//     specs: { capacity: "8 kg", energy: "5-Star", noise: "42 dB", programs: "16", spin: "1400 RPM" },
+//     features: ["AI Fabric Sensor", "Steam Wash", "Self-Clean Drum", "Wi-Fi Control", "Child Lock"],
+//     warranty: "2 Years (Parts & Labour)",
+//     image: "🫧",
+//   },
+//   {
+//     id: "WM-5500", name: "TopLoad Eco 5500", category: "washing-machine",
+//     tagline: "Economical, reliable, everyday performance",
+//     price: "RM 1,299", oldPrice: null, badge: "New",
+//     rating: 4.5, reviews: 187, inStock: true,
+//     color: "icon-teal",
+//     specs: { capacity: "7 kg", energy: "4-Star", noise: "48 dB", programs: "10", spin: "1200 RPM" },
+//     features: ["Fuzzy Logic", "Soak Mode", "Gentle Drum", "Auto-Balance"],
+//     warranty: "1 Year (Parts & Labour)",
+//     image: "🌀",
+//   },
+//   {
+//     id: "AC-5500", name: "CoolMax Inverter 5500", category: "air-conditioner",
+//     tagline: "Whisper-quiet cooling, all day comfort",
+//     price: "RM 1,799", oldPrice: "RM 2,100", badge: "Hot Deal",
+//     rating: 4.7, reviews: 512, inStock: true,
+//     color: "icon-purple",
+//     specs: { btu: "12,000 BTU", energy: "5-Star", noise: "19 dB", coverage: "450 sq ft", compressor: "Inverter" },
+//     features: ["Auto-Cleaning", "4D Airflow", "Sleep Mode", "PM 2.5 Filter", "Wi-Fi Smart"],
+//     warranty: "5 Years Compressor, 2 Years Parts",
+//     image: "❄️",
+//   },
+//   {
+//     id: "AC-3300", name: "AirLite Standard 3300", category: "air-conditioner",
+//     tagline: "Affordable cooling for small spaces",
+//     price: "RM 999", oldPrice: null, badge: null,
+//     rating: 4.3, reviews: 98, inStock: true,
+//     color: "icon-teal",
+//     specs: { btu: "9,000 BTU", energy: "3-Star", noise: "26 dB", coverage: "280 sq ft", compressor: "Non-Inverter" },
+//     features: ["Timer Function", "Auto Restart", "Dehumidify Mode", "Sleep Mode"],
+//     warranty: "1 Year (Parts & Labour)",
+//     image: "🌬️",
+//   },
+//   {
+//     id: "RF-3300", name: "FreshKeep 2-Door 3300", category: "refrigerator",
+//     tagline: "Keep everything fresher, longer",
+//     price: "RM 1,599", oldPrice: "RM 1,850", badge: "Popular",
+//     rating: 4.6, reviews: 276, inStock: true,
+//     color: "icon-green",
+//     specs: { capacity: "340L", energy: "3-Star", noise: "38 dB", freezer: "80L", defrost: "Auto" },
+//     features: ["No-Frost Technology", "Humidity Control", "Odour Filter", "Turbo Cool", "Tempered Glass Shelves"],
+//     warranty: "2 Years (Parts), 5 Years Compressor",
+//     image: "🧊",
+//   },
+//   {
+//     id: "RF-4500", name: "FrenchDoor Elite 4500", category: "refrigerator",
+//     tagline: "Stylish, spacious, and smart",
+//     price: "RM 3,299", oldPrice: null, badge: "Premium",
+//     rating: 4.9, reviews: 64, inStock: false,
+//     color: "icon-rose",
+//     specs: { capacity: "520L", energy: "5-Star", noise: "34 dB", freezer: "140L", defrost: "Auto" },
+//     features: ["Twin Cooling System", "Water Dispenser", "Smart Diagnosis", "Door Alarm", "Sabbath Mode"],
+//     warranty: "2 Years (Parts), 10 Years Compressor",
+//     image: "🏠",
+//   },
+//   {
+//     id: "DW-2200", name: "CleanSweep Dishwasher 2200", category: "dishwasher",
+//     tagline: "Spotless results, zero effort",
+//     price: "RM 2,199", oldPrice: "RM 2,499", badge: null,
+//     rating: 4.4, reviews: 143, inStock: true,
+//     color: "icon-orange",
+//     specs: { capacity: "13 sets", energy: "4-Star", noise: "44 dB", programs: "8", drying: "Heat Dry" },
+//     features: ["Half-Load Option", "Intensive Zone", "Delay Start", "Auto Door Open", "Stainless Interior"],
+//     warranty: "2 Years (Parts & Labour)",
+//     image: "✨",
+//   },
+//   {
+//     id: "MW-1100", name: "QuickHeat Microwave 1100", category: "microwave",
+//     tagline: "Fast, even, and perfectly heated every time",
+//     price: "RM 399", oldPrice: "RM 499", badge: "Value Pick",
+//     rating: 4.2, reviews: 389, inStock: true,
+//     color: "icon-blue",
+//     specs: { power: "1100W", capacity: "28L", noise: "50 dB", programs: "12", display: "LED" },
+//     features: ["Auto Cook Menus", "Defrost by Weight", "Child Lock", "Keep Warm", "Easy Clean Interior"],
+//     warranty: "1 Year (Parts & Labour)",
+//     image: "📡",
+//   },
+// ];
 
 const PRODUCT_CATEGORIES = [
   { id: "all", label: "All Products" },
@@ -110,8 +111,53 @@ export const ProductsPage = ({ setPage }) => {
   const [sortBy, setSortBy] = useState("popular");
   const [selected, setSelected] = useState(null);
   const [wishlist, setWishlist] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const filtered = PRODUCTS
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+
+        const data = await productService.getProducts({
+          name: search || undefined,
+          category: category !== "all" ? category : undefined,
+        });
+
+        // Map backend format to your UI format
+        const mapped = data.map(p => ({
+          id: p.product_id,
+          name: p.name,
+          category: p.category,
+          tagline: p.tagline,
+          price: `RM ${p.price.toLocaleString()}`,
+          oldPrice: p.oldPrice ? `RM ${p.oldPrice.toLocaleString()}` : null,
+          badge: p.badge,
+          rating: p.rating || 0,
+          reviews: p.reviews || 0,   // You now HAVE reviews in DB
+          inStock: p.in_stock,
+          isDiscontinued: !p.inActive,
+          specs: p.specs || {},
+          features: p.features || [],
+          warranty: `${p.warrantyMonths} Months`,
+          image: p.image || "📦",
+          color: p.color || "icon-blue",
+        }));
+
+        setProducts(mapped);
+
+      } catch (error) {
+        console.error("Fetch failed:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [category, search]);
+
+  const filtered = products
     .filter(p => (category === "all" || p.category === category) &&
       (!search || p.name.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase())))
     .sort((a, b) => {
@@ -174,7 +220,13 @@ export const ProductsPage = ({ setPage }) => {
               <div key={product.id} className="prod-card" onClick={() => setSelected(product)}>
                 {/* Badge */}
                 {product.badge && <div className="prod-badge">{product.badge}</div>}
-                {!product.inStock && <div className="prod-badge prod-badge-oos">Out of Stock</div>}
+                {product.isDiscontinued && (
+                  <div className="prod-badge prod-badge-oos">Discontinued</div>
+                )}
+
+                {!product.inStock && !product.isDiscontinued && (
+                  <div className="prod-badge prod-badge-oos">Out of Stock</div>
+                )}
 
                 {/* Wishlist */}
                 <button className={`prod-wishlist-btn ${wishlist.includes(product.id) ? "active" : ""}`}
