@@ -1,7 +1,8 @@
 // src/components/FeedbackPanel.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, CheckCircle, Lock, RefreshCw, Send } from "lucide-react";
 import "../assets/feedback.css";
+import { createFeedback, getFeedbackByTicket } from "../service/feedback";
 
 // ─── FEEDBACK PANEL ───────────────────────────────────────────
 const SATISFACTION_TAGS = [
@@ -36,6 +37,25 @@ export const FeedbackPanel = ({ ticketId }) => {
   const activeStar = hovered || rating;
   const tags = rating >= 4 ? SATISFACTION_TAGS : rating > 0 ? ISSUE_TAGS : [];
 
+  // ─── PRE-CHECK FOR EXISTING FEEDBACK ─────────────────────────────
+  useEffect(() => {
+    const checkFeedback = async () => {
+      try {
+        const data = await getFeedbackByTicket(ticketId);
+        if (data && data.length > 0) {
+          const fb = data[0]; // Take first feedback
+          setRating(fb.rating);
+          setSelectedTags(fb.tags || []);
+          setComment(fb.comment || "");
+          setSubmitted(true); // Directly show submitted UI
+        }
+      } catch (err) {
+        console.error("Failed to fetch feedback:", err);
+      }
+    };
+    checkFeedback();
+  }, [ticketId]);
+
   const toggleTag = (id) =>
     setSelectedTags(t => t.includes(id) ? t.filter(x => x !== id) : [...t, id]);
 
@@ -46,13 +66,27 @@ export const FeedbackPanel = ({ ticketId }) => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!rating) return;
     setSubmitting(true);
-    // Simulate API submission
-    setTimeout(() => { setSubmitting(false); setSubmitted(true); }, 1000);
+
+    try {
+      await createFeedback({
+        ticket_id: ticketId,
+        rating,
+        tags: selectedTags,
+        comment
+      });
+      setSubmitted(true);
+    } catch (err) {
+      alert("Failed to submit feedback. Please try again.");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  // ─── SUBMITTED UI ───────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="fb-wrap">
@@ -80,10 +114,13 @@ export const FeedbackPanel = ({ ticketId }) => {
               })}
             </div>
           )}
+          {comment && <div className="fb-submitted-comment">{comment}</div>}
         </div>
       </div>
     );
   }
+
+
 
   return (
     <div className="fb-wrap">
