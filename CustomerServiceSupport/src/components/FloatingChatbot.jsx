@@ -1,6 +1,6 @@
 // src/components/FloatingChatbot.jsx
 import { useState, useRef, useEffect } from "react";
-import { Bot, Lock, User, Send, X, MessageCircle, Minus, Headphones } from "lucide-react";
+import { Bot, Lock, User, Send, X, MessageCircle, Mic, MicOff, Minus, Headphones } from "lucide-react";
 import "../assets/chatbot.css";
 
 const QUICK_REPLIES = [
@@ -33,7 +33,7 @@ function getTime() {
   return new Date().toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" });
 }
 
-export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
+export const FloatingChatbot = ({ isOpen, setIsOpen }) =>{
   const [messages, setMessages] = useState([
     { id: 1, from: "bot", text: "👋 Hi there! I'm your ServiceHub assistant. How can I help you today?", time: getTime() },
   ]);
@@ -43,8 +43,23 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
   const [showReplies, setShowReplies] = useState(true);
   const [unread, setUnread] = useState(0);
   const [minimised, setMinimised] = useState(false);
+
+  // Voice state
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const [transcript, setTranscript] = useState("");
+  const [voiceMode, setVoiceMode] = useState(false); // full voice UI mode
+
   const endRef = useRef(null);
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  // Check browser support
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setVoiceSupported(!!SpeechRecognition);
+  }, []);
 
   useEffect(() => {
     if (isOpen) { setUnread(0); setMinimised(false); setTimeout(() => inputRef.current?.focus(), 150); }
@@ -53,6 +68,11 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
   useEffect(() => {
     if (isOpen && !minimised) endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, isOpen, minimised]);
+
+  // Stop listening if panel closes or minimises
+  useEffect(() => {
+    if (!isOpen || minimised) stopListening();
+  }, [isOpen, minimised]);
 
   const addBotMsg = (text) => {
     setIsTyping(true);
@@ -67,11 +87,71 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
     const msg = (text || input).trim();
     if (!msg) return;
     setInput("");
+    setTranscript("");
     setShowReplies(false);
     setMessages(m => [...m, { id: Date.now(), from: "user", text: msg, time: getTime() }]);
     const reply = CHATBOT_FLOWS[msg] || GENERIC_REPLIES[botTurn % GENERIC_REPLIES.length];
     setBotTurn(t => t + 1);
     addBotMsg(reply);
+  };
+
+  // ── Voice recognition ──
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    setVoiceError("");
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-MY";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => { setIsListening(true); setTranscript(""); };
+
+    recognition.onresult = (e) => {
+      let interim = "";
+      let final = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      setTranscript(final || interim);
+      if (final) {
+        setInput(final);
+        // Auto-send after brief pause
+        setTimeout(() => {
+          setIsListening(false);
+          sendMessage(final);
+        }, 400);
+      }
+    };
+
+    recognition.onerror = (e) => {
+      setIsListening(false);
+      if (e.error === "not-allowed") setVoiceError("Microphone access denied. Please allow mic in browser settings.");
+      else if (e.error === "no-speech") setVoiceError("No speech detected. Try again.");
+      else setVoiceError("Voice input error. Try again.");
+      setTimeout(() => setVoiceError(""), 4000);
+    };
+
+    recognition.onend = () => { setIsListening(false); };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
+    setIsListening(false);
+  };
+
+  const toggleVoice = () => {
+    if (isListening) stopListening();
+    else startListening();
   };
 
   const renderText = (text) =>
@@ -97,6 +177,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
       {/* Chat Panel */}
       {isOpen && (
         <div className={`fcb-panel ${minimised ? "fcb-minimised" : ""}`}>
+
           {/* Header */}
           <div className="fcb-header">
             <div className="fcb-header-left">
@@ -110,6 +191,15 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
               </div>
             </div>
             <div className="fcb-header-btns">
+              {voiceSupported && !minimised && (
+                <button
+                  className={`fcb-hbtn fcb-voice-mode-btn ${voiceMode ? "fcb-voice-mode-on" : ""}`}
+                  onClick={() => { setVoiceMode(m => !m); if (isListening) stopListening(); }}
+                  title={voiceMode ? "Switch to text mode" : "Switch to voice mode"}
+                >
+                  <Mic size={14} />
+                </button>
+              )}
               <button className="fcb-hbtn" onClick={() => setMinimised(m => !m)} title={minimised ? "Expand" : "Minimise"}>
                 <Minus size={14} />
               </button>
@@ -121,14 +211,16 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
 
           {!minimised && (
             <>
-              {/* Body */}
+              {/* Messages */}
               <div className="fcb-messages">
-                {/* Welcome banner */}
                 <div className="fcb-welcome-banner">
                   <div className="fcb-welcome-icon"><Headphones size={18} /></div>
                   <div>
                     <div className="fcb-welcome-title">We're here to help</div>
-                    <div className="fcb-welcome-sub">Ask anything about your appliance, warranty, or service request.</div>
+                    <div className="fcb-welcome-sub">
+                      Ask anything about your appliance, warranty, or service.
+                      {voiceSupported && <span className="fcb-voice-hint"> 🎤 Voice input supported.</span>}
+                    </div>
                   </div>
                 </div>
 
@@ -137,6 +229,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
                     {msg.from === "bot" && <div className="fcb-bot-av"><Bot size={11} /></div>}
                     <div className="fcb-col">
                       <div className={`fcb-bubble ${msg.from === "user" ? "fcb-bubble-u" : "fcb-bubble-b"}`}>
+                        {msg.voice && <span className="fcb-voice-tag"><Mic size={8} /> Voice</span>}
                         {renderText(msg.text)}
                       </div>
                       <div className="fcb-time">{msg.time}</div>
@@ -152,7 +245,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
                   </div>
                 )}
 
-                {showReplies && !isTyping && (
+                {showReplies && !isTyping && !voiceMode && (
                   <div className="fcb-quick-wrap">
                     <div className="fcb-quick-label">Choose a topic or type below:</div>
                     <div className="fcb-quick-grid">
@@ -166,18 +259,102 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
                 <div ref={endRef} />
               </div>
 
-              {/* Input */}
-              <div className="fcb-input-area">
-                <input ref={inputRef} className="fcb-input" placeholder="Type a message..."
-                  value={input} onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && sendMessage()} />
-                <button className={`fcb-send ${input.trim() ? "active" : ""}`} onClick={() => sendMessage()} disabled={!input.trim()}>
-                  <Send size={14} />
-                </button>
-              </div>
+              {/* Voice error toast */}
+              {voiceError && (
+                <div className="fcb-voice-error">
+                  <AlertCircle size={12} /> {voiceError}
+                </div>
+              )}
+
+              {/* ── VOICE MODE UI ── */}
+              {voiceMode ? (
+                <div className="fcb-voice-panel">
+                  <div className="fcb-voice-top">
+                    {isListening ? (
+                      <div className="fcb-listening-state">
+                        <div className="fcb-mic-rings">
+                          <span className="fcb-ring fcb-ring-1" />
+                          <span className="fcb-ring fcb-ring-2" />
+                          <span className="fcb-ring fcb-ring-3" />
+                          <button className="fcb-mic-btn fcb-mic-active" onClick={stopListening}>
+                            <MicOff size={22} />
+                          </button>
+                        </div>
+                        <div className="fcb-voice-label">Listening…</div>
+                        {transcript && (
+                          <div className="fcb-transcript">
+                            <span className="fcb-transcript-text">"{transcript}"</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="fcb-idle-state">
+                        <button className="fcb-mic-btn" onClick={startListening}>
+                          <Mic size={22} />
+                        </button>
+                        <div className="fcb-voice-label">Tap to speak</div>
+                        <div className="fcb-voice-sublabel">or switch back to text mode using the mic icon above</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Also allow typing in voice mode */}
+                  <div className="fcb-voice-type-row">
+                    <input
+                      className="fcb-input fcb-voice-input"
+                      placeholder="Or type here…"
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && sendMessage()}
+                    />
+                    <button className={`fcb-send ${input.trim() ? "active" : ""}`} onClick={() => sendMessage()} disabled={!input.trim()}>
+                      <Send size={14} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ── TEXT MODE UI ── */
+                <div className="fcb-input-area">
+                  <input
+                    ref={inputRef}
+                    className="fcb-input"
+                    placeholder="Type a message..."
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && sendMessage()}
+                  />
+                  {/* Inline mic button in text mode */}
+                  {voiceSupported && (
+                    <button
+                      className={`fcb-inline-mic ${isListening ? "fcb-inline-mic-active" : ""}`}
+                      onClick={toggleVoice}
+                      title={isListening ? "Stop listening" : "Speak your message"}
+                    >
+                      {isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                    </button>
+                  )}
+                  <button className={`fcb-send ${input.trim() ? "active" : ""}`} onClick={() => sendMessage()} disabled={!input.trim()}>
+                    <Send size={14} />
+                  </button>
+                </div>
+              )}
+
+              {/* Inline listening indicator strip (text mode) */}
+              {isListening && !voiceMode && (
+                <div className="fcb-listening-strip">
+                  <div className="fcb-strip-bars">
+                    <span /><span /><span /><span /><span />
+                  </div>
+                  {transcript
+                    ? <span className="fcb-strip-text">"{transcript}"</span>
+                    : <span className="fcb-strip-text">Listening…</span>}
+                  <button className="fcb-strip-stop" onClick={stopListening}><X size={10} /></button>
+                </div>
+              )}
 
               <div className="fcb-foot">
                 <Lock size={10} /> Encrypted &amp; private · ServiceHub AI
+                {voiceSupported && <span className="fcb-foot-voice"> · 🎤 Voice ready</span>}
               </div>
             </>
           )}
