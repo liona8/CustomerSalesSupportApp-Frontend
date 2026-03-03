@@ -105,14 +105,11 @@ const FAQ_CATEGORIES = [
   { id: "general", label: "General Product Questions", icon: Truck, count: 3 },
 ];
 
-export const SupportPage = () => {
+export const SupportPage = ({ openChat }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [openFaq, setOpenFaq] = useState(null);
-  const [showChat, setShowChat] = useState(false);
-  const [chatStarted, setChatStarted] = useState(false);
   const [votes, setVotes] = useState({});
-  const [hasSearched, setHasSearched] = useState(false);
 
   const filtered = FAQS.filter(faq => {
     const matchCat = activeCategory === "all" || faq.category === activeCategory;
@@ -150,8 +147,8 @@ export const SupportPage = () => {
             className="faq-search-input"
             placeholder="Describe your issue, e.g. 'washing machine not spinning' or 'error E3'..."
             value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); setHasSearched(true); }}
-            onKeyDown={e => e.key === "Enter" && setHasSearched(true)}
+            onChange={e => { setSearchQuery(e.target.value); }}
+            onKeyDown={e => e.key === "Enter" && setSearchQuery(e.target.value)}
           />
           <button className="faq-search-btn" onClick={() => setHasSearched(true)}>
             <Search size={14} /> Search
@@ -186,11 +183,12 @@ export const SupportPage = () => {
               <div style={{ marginTop: 28, padding: "16px", background: "var(--brand-light)", borderRadius: 12, border: "1px solid rgba(29,95,179,0.15)" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "var(--brand)", marginBottom: 10 }}>Still need help?</div>
                 {[
-                  { icon: MessageCircle, label: "Chat with us", sub: "Available now" },
-                  { icon: Phone, label: "1300-88-XXXX", sub: "Mon–Sat, 9am–6pm" },
-                  { icon: Mail, label: "support@hub.com", sub: "Reply in 4 hours" },
+                  { icon: MessageCircle, label: "Chat with us", sub: "Available now", action: openChat },
+                  { icon: Phone, label: "1300-88-XXXX", sub: "Mon–Sat, 9am–6pm", action: null },
+                  { icon: Mail, label: "support@hub.com", sub: "Reply in 4 hours", action: null },
                 ].map((c, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: i < 2 ? "1px solid rgba(29,95,179,0.1)" : "none" }}>
+                  <div key={i} onClick={c.action || undefined}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: i < 2 ? "1px solid rgba(29,95,179,0.1)" : "none", cursor: c.action ? "pointer" : "default" }}>
                     <c.icon size={14} color="var(--brand)" />
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>{c.label}</div>
@@ -218,7 +216,7 @@ export const SupportPage = () => {
                   <h3>No results found for "{searchQuery}"</h3>
                   <p>We couldn't find an article matching your search. Our support team can help you directly — just start a chat below.</p>
                   <div className="faq-cta-options">
-                    <div className="faq-cta-card" onClick={() => setShowChat(true)}>
+                    <div className="faq-cta-card" onClick={openChat}>
                       <div className="faq-cta-card-icon icon-blue"><MessageCircle size={18} /></div>
                       <div>
                         <div className="faq-cta-card-label">Live Chat</div>
@@ -275,7 +273,7 @@ export const SupportPage = () => {
                             <button
                               className="faq-vote-btn"
                               style={{ marginLeft: "auto", borderColor: "var(--accent)", color: "var(--accent)", fontWeight: 600 }}
-                              onClick={() => setShowChat(true)}
+                              onClick={openChat}
                             >
                               <MessageCircle size={11} /> Start a Chat
                             </button>
@@ -295,7 +293,7 @@ export const SupportPage = () => {
                       Our support team is online and ready to help. Chat with us or raise a ticket.
                     </p>
                     <div className="faq-cta-options">
-                      <div className="faq-cta-card" onClick={() => setShowChat(true)}>
+                      <div className="faq-cta-card" onClick={openChat}>
                         <div className="faq-cta-card-icon icon-blue"><MessageCircle size={18} /></div>
                         <div>
                           <div className="faq-cta-card-label">Chat with Support</div>
@@ -317,50 +315,6 @@ export const SupportPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Chat Flow */}
-      {showChat && (
-        <section className="chat-section" id="chat-section">
-          <div className="container">
-            <div className="chat-section-inner">
-              {/* Left Info */}
-              <div className="chat-info">
-                <div className="section-label"><MessageCircle size={12} /> Live Support Chat</div>
-                <h2>Let's get your issue sorted, <em style={{ fontStyle: "italic", color: "var(--brand)" }}>fast</em></h2>
-                <p>Fill in your details so our agent can immediately pull up your product history and start helping. No need to repeat yourself.</p>
-                <div className="chat-steps">
-                  {[
-                    { title: "Enter your details", desc: "Name, email, and serial number so we can find your product" },
-                    { title: "Start the chat", desc: "Connect instantly with AI or a live agent" },
-                    { title: "Get it resolved", desc: "We'll escalate, schedule, or fix it right in the chat" },
-                  ].map((step, i) => (
-                    <div className="chat-step" key={i}>
-                      <div className="chat-step-num">{i + 1}</div>
-                      <div className="chat-step-text">
-                        <strong>{step.title}</strong>
-                        <span>{step.desc}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 32, padding: "16px 20px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, display: "flex", gap: 10, alignItems: "center" }}>
-                  <CheckCircle size={16} color="#16a34a" />
-                  <div style={{ fontSize: 13, color: "#166534" }}>
-                    <strong>Agents online now.</strong> Average wait time is under 2 minutes.
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Form or Chat Window */}
-              {!chatStarted ? (
-                <ChatInfoForm onStartChat={() => setChatStarted(true)} />
-              ) : (
-                <ChatWindow onClose={() => { setChatStarted(false); setShowChat(false); }} />
-              )}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 }

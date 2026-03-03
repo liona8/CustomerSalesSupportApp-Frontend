@@ -1,7 +1,8 @@
 //src/pages/HomePage.jsx
 import { ArrowRight, CheckCircle, HelpCircle, LifeBuoy, MessageCircle, Package, Shield, Star, Truck, Zap, Wrench } from "lucide-react";
+import "../assets/chatbot.css";
 
-export const HomePage = ({ setPage }) => {
+export const HomePage = ({ setPage, openChat }) => {
   return (
     <>
       {/* Hero */}
@@ -20,7 +21,7 @@ export const HomePage = ({ setPage }) => {
                 Get instant support, track your service request, and chat with our team — all in one place. No hold music, no runaround.
               </p>
               <div className="hero-ctas animate-in animate-in-delay-3">
-                <button className="btn-primary large" onClick={() => setPage("support")}>
+                <button className="btn-primary large" onClick={openChat}>
                   <LifeBuoy size={18} /> Get Help Now
                 </button>
                 <button className="btn-outline large" onClick={() => setPage("track")} style={{ padding: "13px 24px", fontSize: 16, borderRadius: 12 }}>

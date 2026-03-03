@@ -35,8 +35,8 @@ export const Footer = ({ setPage }) => {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2025 ServiceHub. All rights reserved.</span>
-          <span>Built for better customer experiences.</span>
+          <span>© 2026 ServiceHub. All rights reserved.</span>
+          {/* <span>Built for better customer experiences.</span> */}
         </div>
       </div>
     </footer>
