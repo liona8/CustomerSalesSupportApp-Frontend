@@ -8,10 +8,10 @@
 
 /* ── Variables ───────────────────────────────────────────── */
 :root {
-  --brand:        #1d5fb3;
-  --brand-light:  #e8f0fc;
-  --brand-mid:    #4a7fd4;
-  --accent:       #e05c2a;
+  --brand:        #c62828; 
+  --brand-light:  #fdecea; 
+  --brand-mid:    #e53935;
+  --accent:       #e05c2a; 
   --accent-light: #fdf0eb;
 
   --bg:           #faf9f7;
@@ -435,7 +435,7 @@ h1, h2, h3 { font-family: 'Fraunces', serif; line-height: 1.2; }
    CONTACT & FAQ PAGE
    ============================================================ */
 .page-hero {
-  background: linear-gradient(135deg, var(--brand) 0%, #1850a0 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, #BB2525 100%);
   padding: 60px 0 80px 60px;
   position: relative;
   overflow: hidden;
