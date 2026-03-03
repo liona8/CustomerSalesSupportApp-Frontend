@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, Lock, User, Send, X, MessageCircle, Mic, MicOff, Minus, Headphones } from "lucide-react";
 import "../assets/chatbot.css";
+import { sendChatMessage } from "../service/chatbot";
 
 const QUICK_REPLIES = [
   "Check warranty status",
@@ -12,22 +13,22 @@ const QUICK_REPLIES = [
   "Speak to an agent",
 ];
 
-const CHATBOT_FLOWS = {
-  "Check warranty status": "Sure! Please share your serial number (e.g. SN-WM2024-001) and I'll check your warranty status right away.",
-  "Error code help": "I can help with that! Please tell me the error code on your appliance display (e.g. E3, F5) and the product model.",
-  "Schedule a repair": "I'll help you book a technician. Could you describe the issue? A technician will be scheduled within 24–48 hours.",
-  "Track my service": "Please share your Ticket ID (e.g. TK-2841) or serial number and I'll pull up your service status.",
-  "Spare parts info": "I can check parts availability. Please share your product model and the part needed, or describe the fault.",
-  "Speak to an agent": "Connecting you now... 🟢 **Sara Lim** has joined the chat. How can she help you today?",
-};
+// const CHATBOT_FLOWS = {
+//   "Check warranty status": "Sure! Please share your serial number (e.g. SN-WM2024-001) and I'll check your warranty status right away.",
+//   "Error code help": "I can help with that! Please tell me the error code on your appliance display (e.g. E3, F5) and the product model.",
+//   "Schedule a repair": "I'll help you book a technician. Could you describe the issue? A technician will be scheduled within 24–48 hours.",
+//   "Track my service": "Please share your Ticket ID (e.g. TK-2841) or serial number and I'll pull up your service status.",
+//   "Spare parts info": "I can check parts availability. Please share your product model and the part needed, or describe the fault.",
+//   "Speak to an agent": "Connecting you now... 🟢 **Sara Lim** has joined the chat. How can she help you today?",
+// };
 
-const GENERIC_REPLIES = [
-  "I understand. Let me look into that for you...",
-  "Thanks for the details! I'm checking our records now.",
-  "Got it. Based on what you've described, I recommend submitting a service request. Shall I create one?",
-  "I've flagged this for our technical team. Reference **TK-2851** has been created. Anything else?",
-  "You're all set! Is there anything else I can help you with today?",
-];
+// const GENERIC_REPLIES = [
+//   "I understand. Let me look into that for you...",
+//   "Thanks for the details! I'm checking our records now.",
+//   "Got it. Based on what you've described, I recommend submitting a service request. Shall I create one?",
+//   "I've flagged this for our technical team. Reference **TK-2851** has been created. Anything else?",
+//   "You're all set! Is there anything else I can help you with today?",
+// ];
 
 function getTime() {
   return new Date().toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" });
@@ -43,6 +44,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) =>{
   const [showReplies, setShowReplies] = useState(true);
   const [unread, setUnread] = useState(0);
   const [minimised, setMinimised] = useState(false);
+  const [threadId, setThreadId] = useState(null);
 
   // Voice state
   const [isListening, setIsListening] = useState(false);
@@ -83,17 +85,53 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) =>{
     }, 900 + Math.random() * 500);
   };
 
-  const sendMessage = (text) => {
+  const sendMessage = async (text) => {
     const msg = (text || input).trim();
     if (!msg) return;
+
     setInput("");
     setTranscript("");
     setShowReplies(false);
-    setMessages(m => [...m, { id: Date.now(), from: "user", text: msg, time: getTime() }]);
-    const reply = CHATBOT_FLOWS[msg] || GENERIC_REPLIES[botTurn % GENERIC_REPLIES.length];
-    setBotTurn(t => t + 1);
-    addBotMsg(reply);
-  };
+
+    // Add user message
+    setMessages(m => [
+        ...m,
+        { id: Date.now(), from: "user", text: msg, time: getTime() }
+    ]);
+
+    setIsTyping(true);
+
+    try {
+        const data = await sendChatMessage(msg, threadId);
+
+        setThreadId(data.thread_id); // save thread for next message
+
+        setIsTyping(false);
+
+        setMessages(m => [
+            ...m,
+            {
+            id: Date.now(),
+            from: "bot",
+            text: data.reply,
+            time: getTime()
+            }
+        ]);
+
+    } catch (error) {
+        setIsTyping(false);
+
+        setMessages(m => [
+        ...m,
+        {
+            id: Date.now(),
+            from: "bot",
+            text: "⚠️ Unable to connect to server.",
+            time: getTime()
+        }
+        ]);
+    }
+    };
 
   // ── Voice recognition ──
   const startListening = () => {
