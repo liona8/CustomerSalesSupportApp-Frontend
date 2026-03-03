@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { AlertCircle, Bot, CheckCircle, Clock, CreditCard, FileText, Gift, Hash, HelpCircle, MessageCircle, Package, RefreshCw, Search, Shield, User, Wrench, Zap } from "lucide-react";
 import '../assets/track.css';
+import { FeedbackPanel } from "../components/FeedbackPanel";
 
 const SAMPLE_TICKETS = [
   {
@@ -387,6 +388,12 @@ export const TrackPage = () =>{
                   </div>
                 </div>
               </div>
+
+              {/* ── Feedback Section (COMPLETED only) ── */}
+              {result.status === "COMPLETED" && (
+                <FeedbackPanel ticketId={result.ticket_id} />
+              )}
+
             </div>
           )}
         </div>
