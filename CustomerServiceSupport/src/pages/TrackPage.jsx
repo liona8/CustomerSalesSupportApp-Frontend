@@ -1,93 +1,394 @@
 //src/pages/TrackPage.jsx
 import { useState } from "react";
-import { Search, CheckCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, Bot, CheckCircle, Clock, CreditCard, FileText, Gift, Hash, HelpCircle, MessageCircle, Package, RefreshCw, Search, Shield, User, Wrench, Zap } from "lucide-react";
+import '../assets/track.css';
 
-export const TrackPage = () => {
+const SAMPLE_TICKETS = [
+  {
+    id: "7e69b114-45i9-4g64-cg5d-9fegd4354444",
+    ticket_id: "TKT-5679", order_id: "ORD-1005",
+    subject: "Washing machine making loud noise during spin cycle",
+    description: "FrontLoad Pro 7800 started making grinding noise during high-speed spin. Unit is still under warranty.",
+    status: "COMPLETED",
+    created_at: "2026-02-20T09:30:00+08:00",
+    customer_name: "Siti Nurhaliza", customer_email: "siti.nur@email.com",
+    warranty_status: "UNDER_WARRANTY", urgency_level: "STANDARD", priority: "Medium",
+    assigned_tech_id: "TECH-001",
+    sla_deadline_at: "2026-02-22T09:30:00+08:00",
+    fault_type: "Mechanical – Bearing/Motor", fault_notes: "Grinding noise confirmed during 1200RPM spin cycle. Drum bearing worn.",
+    predicted_parts: [{ part_id: "P-MISC", name: "General Inspection Kit", stock: "UNKNOWN", cost: 50 }],
+    parts_approved: true, charge_applicable: false,
+    completed_at: "2026-03-03T01:41:03+08:00",
+    compensation_code: "COMP-T-5679-3FEC",
+    work_done_notes: "Replaced drum bearing assembly. Unit tested and running normally at all spin speeds.",
+    actual_parts_used: ["Drum Bearing Assembly WM-7800", "Lubricant Kit"],
+    notes: [
+      { note: "Customer contacted re: appointment scheduling.", addedAt: "2026-03-02T23:47:06+08:00", addedBy: "AI Agent" },
+      { note: "Technician completed repair. Compensation code issued due to SLA delay.", addedAt: "2026-03-03T01:36:22+08:00", addedBy: "AI Agent" },
+    ],
+    updated_at: "2026-03-03T01:41:03+08:00",
+  },
+  {
+    id: "8f70c225-56j0-4h75-dh6e-afheg5465555",
+    ticket_id: "TKT-5680", order_id: "ORD-1006",
+    subject: "Refrigerator not cooling properly",
+    description: "FreshKeep refrigerator temperature fluctuating. Fresh food section at 15°C instead of 4°C.",
+    status: "ASSIGNED",
+    created_at: "2026-01-10T14:15:00+08:00",
+    customer_name: "Jason Tan", customer_email: "jason.tan@email.com",
+    warranty_status: "EXPIRED", urgency_level: "STANDARD", priority: "Medium",
+    assigned_tech_id: "TECH-001",
+    sla_deadline_at: "2026-01-12T14:15:00+08:00",
+    fault_type: null, fault_notes: null,
+    predicted_parts: [], parts_approved: false, charge_applicable: true,
+    completed_at: null, compensation_code: null, work_done_notes: null, actual_parts_used: [],
+    notes: [{ note: "Ticket assigned to technician. Awaiting site visit confirmation.", addedAt: "2026-03-03T00:01:29+08:00", addedBy: "AI Agent" }],
+    updated_at: "2026-03-03T00:01:29+08:00",
+  },
+  {
+    id: "9g81d336-67k1-4i86-ei7f-bgihf6576666",
+    ticket_id: "TKT-5681", order_id: "ORD-1007",
+    subject: "Air conditioner not cooling - clinic environment",
+    description: "CoolMax Inverter unit blowing warm air. Affects medication storage area. Requesting immediate service.",
+    status: "JOB_STARTED",
+    created_at: "2026-03-01T08:45:00+08:00",
+    customer_name: "Dr. Lim Wei Ming", customer_email: "limwm@clinic.com",
+    warranty_status: "UNDER_WARRANTY", urgency_level: "CRITICAL", priority: "High",
+    assigned_tech_id: "TECH-001",
+    sla_deadline_at: "2026-03-01T16:45:00+08:00",
+    fault_type: null, fault_notes: null,
+    predicted_parts: [], parts_approved: false, charge_applicable: false,
+    completed_at: null, compensation_code: null, work_done_notes: null, actual_parts_used: [],
+    notes: [],
+    updated_at: "2026-03-03T02:19:02+08:00",
+  },
+];
+
+// Status pipeline config
+const STATUS_PIPELINE = [
+  { key: "CREATED",     label: "Ticket Created",       icon: FileText },
+  { key: "ASSIGNED",    label: "Technician Assigned",  icon: User },
+  { key: "JOB_STARTED", label: "Job In Progress",      icon: Wrench },
+  { key: "COMPLETED",   label: "Completed",            icon: CheckCircle },
+];
+const STATUS_ORDER = { CREATED: 0, ASSIGNED: 1, JOB_STARTED: 2, COMPLETED: 3 };
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-MY", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-MY", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function isSLABreached(ticket) {
+  if (!ticket.sla_deadline_at || ticket.status === "COMPLETED") return false;
+  return new Date() > new Date(ticket.sla_deadline_at);
+}
+
+const STATUS_META = {
+  COMPLETED:   { label: "Completed",        color: "#16a34a", bg: "#dcfce7" },
+  JOB_STARTED: { label: "Job In Progress",  color: "#1d5fb3", bg: "#dbeafe" },
+  ASSIGNED:    { label: "Assigned",         color: "#d97706", bg: "#fef3c7" },
+  CREATED:     { label: "Ticket Created",   color: "#6b7280", bg: "#f3f4f6" },
+};
+
+const WARRANTY_META = {
+  UNDER_WARRANTY: { label: "Under Warranty", color: "#16a34a", bg: "#dcfce7" },
+  EXPIRED:        { label: "Warranty Expired", color: "#ef4444", bg: "#fee2e2" },
+};
+
+const URGENCY_META = {
+  CRITICAL: { label: "Critical", color: "#dc2626", bg: "#fee2e2" },
+  HIGH:     { label: "High",     color: "#d97706", bg: "#fef3c7" },
+  STANDARD: { label: "Standard", color: "#2563eb", bg: "#dbeafe" },
+};
+
+
+export const TrackPage = () =>{
   const [trackId, setTrackId] = useState("");
   const [result, setResult] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
-  const mockTrack = () => {
-    if (!trackId.trim()) return;
+  const handleTrack = () => {
+    const q = trackId.trim().toUpperCase();
+    if (!q) return;
     setSearching(true);
+    setNotFound(false);
+    setResult(null);
     setTimeout(() => {
       setSearching(false);
-      setResult({
-        id: trackId.toUpperCase(),
-        customer: "Ahmad Razif",
-        product: "WM-7800 Washing Machine",
-        status: "in-progress",
-        steps: [
-          { label: "Ticket Created", done: true, time: "1 Mar 2025, 9:12 AM" },
-          { label: "Assigned to Technician", done: true, time: "1 Mar 2025, 10:00 AM" },
-          { label: "Diagnosis Completed", done: true, time: "1 Mar 2025, 2:30 PM" },
-          { label: "Spare Part Ordered", done: true, time: "2 Mar 2025, 9:00 AM" },
-          { label: "Part Arrived", done: false, time: "Expected: 4 Mar 2025" },
-          { label: "Repair Completed", done: false, time: "Expected: 4–5 Mar 2025" },
-        ],
-      });
-    }, 800);
+      const found = SAMPLE_TICKETS.find(
+        t => t.ticket_id.toUpperCase() === q || t.order_id.toUpperCase() === q
+      );
+      if (found) setResult(found);
+      else setNotFound(true);
+    }, 700);
   };
+
+  const currentStep = result ? (STATUS_ORDER[result.status] ?? 0) : 0;
+  const slaBreached = result ? isSLABreached(result) : false;
 
   return (
     <>
+      {/* Hero */}
       <div className="page-hero">
         <div className="container">
           <div className="page-hero-label">Service Tracker</div>
           <h1 className="page-hero-title">Track your <em>service request</em></h1>
-          <p className="page-hero-sub">Enter your ticket ID or serial number to see real-time status updates.</p>
+          <p className="page-hero-sub">Enter your Ticket ID or Order ID to get a full real-time status update.</p>
         </div>
       </div>
 
       <section className="section-sm">
-        <div className="container" style={{ maxWidth: 640 }}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", padding: 32, boxShadow: "var(--shadow-md)" }}>
-            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, marginBottom: 8 }}>Enter your ticket or serial number</h2>
-            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>e.g. TK-2841 or SN-WM2024-001</p>
-            <div style={{ display: "flex", gap: 10 }}>
+        <div className="container trk-container">
+
+          {/* Search card */}
+          <div className="trk-search-card">
+            <div className="trk-search-title">
+              <Search size={16} color="var(--brand)" /> Find your service ticket
+            </div>
+            <p className="trk-search-sub">Enter your Ticket ID (e.g. TKT-5679) or Order ID (e.g. ORD-1005)</p>
+            <div className="trk-search-row">
               <input
-                className="form-input"
-                placeholder="TK-XXXX or SN-XXXXXXXX"
+                className="form-input trk-input"
+                placeholder="TKT-XXXX  or  ORD-XXXX"
                 value={trackId}
                 onChange={e => setTrackId(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && mockTrack()}
-                style={{ flex: 1 }}
+                onKeyDown={e => e.key === "Enter" && handleTrack()}
               />
-              <button className="btn-primary" onClick={mockTrack} style={{ whiteSpace: "nowrap" }}>
-                {searching ? <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Search size={14} />}
-                Track
+              <button className="btn-primary trk-btn" onClick={handleTrack} disabled={searching}>
+                {searching
+                  ? <><RefreshCw size={14} style={{ animation: "trk-spin 1s linear infinite" }} /> Searching…</>
+                  : <><Search size={14} /> Track</>}
               </button>
             </div>
+            {/* Quick-try chips */}
+            <div className="trk-sample-chips">
+              <span className="trk-chip-label">Try:</span>
+              {SAMPLE_TICKETS.map(t => (
+                <button key={t.ticket_id} className="trk-chip"
+                  onClick={() => { setTrackId(t.ticket_id); }}>
+                  {t.ticket_id}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            {result && (
-              <div style={{ marginTop: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2 }}>Tracking: <strong style={{ color: "var(--brand)" }}>{result.id}</strong></div>
-                    <div style={{ fontSize: 16, fontWeight: 700 }}>{result.product}</div>
-                    <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>{result.customer}</div>
+          {/* Not found */}
+          {notFound && (
+            <div className="trk-not-found">
+              <AlertCircle size={32} color="#ef4444" />
+              <div className="trk-nf-title">Ticket not found</div>
+              <div className="trk-nf-sub">No ticket matched "<strong>{trackId}</strong>". Please check the ID and try again.</div>
+            </div>
+          )}
+
+          {/* Result */}
+          {result && (
+            <div className="trk-result">
+
+              {/* ── Header bar ── */}
+              <div className="trk-result-header">
+                <div className="trk-result-header-left">
+                  <div className="trk-ticket-id">{result.ticket_id}</div>
+                  <div className="trk-subject">{result.subject}</div>
+                  <div className="trk-meta-row">
+                    <span className="trk-order-id"><Hash size={11} /> {result.order_id}</span>
+                    <span className="trk-dot-sep">·</span>
+                    <span className="trk-customer"><User size={11} /> {result.customer_name}</span>
+                    <span className="trk-dot-sep">·</span>
+                    <span className="trk-created"><Clock size={11} /> {fmtDateShort(result.created_at)}</span>
                   </div>
-                  <span style={{ background: "rgba(245,158,11,0.12)", color: "#b45309", padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>In Progress</span>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                  {result.steps.map((step, i) => (
-                    <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: step.done ? "var(--brand)" : "var(--bg-subtle)", border: step.done ? "none" : "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                          {step.done ? <CheckCircle size={13} color="#fff" /> : <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--border)" }} />}
-                        </div>
-                        {i < result.steps.length - 1 && <div style={{ width: 2, height: 28, background: step.done ? "var(--brand)" : "var(--border)", margin: "2px 0" }} />}
-                      </div>
-                      <div style={{ paddingBottom: 12 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: step.done ? "var(--text-primary)" : "var(--text-muted)" }}>{step.label}</div>
-                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{step.time}</div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="trk-badge-stack">
+                  <span className="trk-badge" style={{ background: STATUS_META[result.status]?.bg, color: STATUS_META[result.status]?.color }}>
+                    {STATUS_META[result.status]?.label}
+                  </span>
+                  <span className="trk-badge" style={{ background: WARRANTY_META[result.warranty_status]?.bg, color: WARRANTY_META[result.warranty_status]?.color }}>
+                    <Shield size={10} /> {WARRANTY_META[result.warranty_status]?.label}
+                  </span>
+                  <span className="trk-badge" style={{ background: URGENCY_META[result.urgency_level]?.bg, color: URGENCY_META[result.urgency_level]?.color }}>
+                    {result.urgency_level === "CRITICAL" && <Zap size={10} />} {URGENCY_META[result.urgency_level]?.label}
+                  </span>
+                  {slaBreached && (
+                    <span className="trk-badge trk-badge-sla"><AlertCircle size={10} /> SLA Breached</span>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* ── Status Pipeline ── */}
+              <div className="trk-pipeline-wrap">
+                <div className="trk-pipeline">
+                  {STATUS_PIPELINE.map((step, i) => {
+                    const done = i <= currentStep;
+                    const active = i === currentStep;
+                    return (
+                      <div key={step.key} className={`trk-step ${done ? "trk-step-done" : ""} ${active ? "trk-step-active" : ""}`}>
+                        <div className="trk-step-icon-wrap">
+                          <div className="trk-step-icon">
+                            <step.icon size={14} />
+                          </div>
+                          {i < STATUS_PIPELINE.length - 1 && (
+                            <div className={`trk-step-line ${done && i < currentStep ? "trk-line-done" : ""}`} />
+                          )}
+                        </div>
+                        <div className="trk-step-label">{step.label}</div>
+                        {active && result.status !== "COMPLETED" && (
+                          <div className="trk-step-current-tag">Current</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Detail grid ── */}
+              <div className="trk-detail-grid">
+
+                {/* Left column */}
+                <div className="trk-detail-left">
+
+                  {/* Issue details */}
+                  <div className="trk-card">
+                    <div className="trk-card-title"><FileText size={14} /> Issue Details</div>
+                    <p className="trk-description">{result.description}</p>
+                    {result.fault_type && (
+                      <div className="trk-info-row">
+                        <span className="trk-info-label">Fault Type</span>
+                        <span className="trk-info-val">{result.fault_type}</span>
+                      </div>
+                    )}
+                    {result.fault_notes && (
+                      <div className="trk-info-row trk-info-row-col">
+                        <span className="trk-info-label">Technician Notes</span>
+                        <span className="trk-info-val">{result.fault_notes}</span>
+                      </div>
+                    )}
+                    {result.work_done_notes && result.work_done_notes !== "string" && (
+                      <div className="trk-info-row trk-info-row-col">
+                        <span className="trk-info-label">Work Done</span>
+                        <span className="trk-info-val trk-work-done">{result.work_done_notes}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Parts */}
+                  {(result.predicted_parts?.length > 0 || result.actual_parts_used?.length > 0) && (
+                    <div className="trk-card">
+                      <div className="trk-card-title"><Package size={14} /> Parts & Materials</div>
+                      {result.predicted_parts?.length > 0 && (
+                        <>
+                          <div className="trk-parts-section-label">Predicted Parts</div>
+                          {result.predicted_parts.map((p, i) => (
+                            <div key={i} className="trk-part-row">
+                              <div>
+                                <div className="trk-part-name">{p.name}</div>
+                                <div className="trk-part-id">{p.part_id}</div>
+                              </div>
+                              <div className="trk-part-right">
+                                <span className={`trk-stock-badge ${p.stock === "IN_STOCK" ? "in" : p.stock === "OUT_OF_STOCK" ? "out" : "unknown"}`}>
+                                  {p.stock === "IN_STOCK" ? "In Stock" : p.stock === "OUT_OF_STOCK" ? "Out of Stock" : "Checking"}
+                                </span>
+                                {p.cost > 0 && <span className="trk-part-cost">RM {p.cost}</span>}
+                              </div>
+                            </div>
+                          ))}
+                          <div className="trk-parts-approved">
+                            {result.parts_approved
+                              ? <><CheckCircle size={12} color="#16a34a" /> Parts approved</>
+                              : <><Clock size={12} color="#d97706" /> Pending approval</>}
+                          </div>
+                        </>
+                      )}
+                      {result.actual_parts_used?.filter(p => p !== "string").length > 0 && (
+                        <>
+                          <div className="trk-parts-section-label" style={{ marginTop: 12 }}>Parts Used</div>
+                          {result.actual_parts_used.filter(p => p !== "string").map((p, i) => (
+                            <div key={i} className="trk-used-part"><CheckCircle size={11} color="#16a34a" /> {p}</div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AI Activity Log */}
+                  {result.notes?.filter(n => n.note !== "string").length > 0 && (
+                    <div className="trk-card">
+                      <div className="trk-card-title"><Bot size={14} /> Activity Log</div>
+                      <div className="trk-notes">
+                        {result.notes.filter(n => n.note !== "string").map((n, i) => (
+                          <div key={i} className="trk-note-row">
+                            <div className="trk-note-avatar"><Bot size={10} /></div>
+                            <div>
+                              <div className="trk-note-by">{n.addedBy}</div>
+                              <div className="trk-note-text">{n.note}</div>
+                              <div className="trk-note-time">{fmtDate(n.addedAt)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right column */}
+                <div className="trk-detail-right">
+
+                  {/* Service info */}
+                  <div className="trk-card">
+                    <div className="trk-card-title"><Wrench size={14} /> Service Info</div>
+                    {[
+                      { label: "Technician", value: result.assigned_tech_id },
+                      { label: "Priority", value: result.priority || "—" },
+                      { label: "Created", value: fmtDate(result.created_at) },
+                      { label: "SLA Deadline", value: fmtDate(result.sla_deadline_at), alert: slaBreached },
+                      { label: "Last Updated", value: fmtDate(result.updated_at) },
+                      { label: "Completed", value: result.completed_at ? fmtDate(result.completed_at) : "—" },
+                    ].map((row, i) => (
+                      <div key={i} className="trk-info-row">
+                        <span className="trk-info-label">{row.label}</span>
+                        <span className={`trk-info-val ${row.alert ? "trk-alert-text" : ""}`}>{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Charges */}
+                  <div className="trk-card">
+                    <div className="trk-card-title"><CreditCard size={14} /> Charges</div>
+                    <div className={`trk-charge-banner ${result.charge_applicable ? "trk-charge-yes" : "trk-charge-no"}`}>
+                      {result.charge_applicable
+                        ? <><AlertCircle size={14} /> Service charge applicable (warranty expired)</>
+                        : <><CheckCircle size={14} /> No charge — covered under warranty</>}
+                    </div>
+                  </div>
+
+                  {/* Compensation */}
+                  {result.compensation_code && (
+                    <div className="trk-card trk-comp-card">
+                      <div className="trk-card-title"><Gift size={14} /> Compensation Issued</div>
+                      <div className="trk-comp-code">{result.compensation_code}</div>
+                      <div className="trk-comp-hint">Present this code at any authorised service centre or use it online for discounts.</div>
+                    </div>
+                  )}
+
+                  {/* Help CTA */}
+                  <div className="trk-card trk-help-card">
+                    <div className="trk-card-title"><HelpCircle size={14} /> Need help?</div>
+                    <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
+                      Have questions about this ticket? Chat with our support team directly.
+                    </p>
+                    <button className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                      <MessageCircle size={14} /> Chat about {result.ticket_id}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>
