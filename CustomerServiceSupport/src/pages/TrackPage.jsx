@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AlertCircle, Bot, CheckCircle, Clock, CreditCard, FileText, Gift, Hash, HelpCircle, MessageCircle, Package, RefreshCw, Search, Shield, User, Wrench, Zap } from "lucide-react";
 import '../assets/track.css';
 import { FeedbackPanel } from "../components/FeedbackPanel";
+import { ticketService } from "../service/ticket";
 
 const SAMPLE_TICKETS = [
   {
@@ -114,20 +115,23 @@ export const TrackPage = () =>{
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  const handleTrack = () => {
+  const handleTrack = async () => {
     const q = trackId.trim().toUpperCase();
     if (!q) return;
+
     setSearching(true);
     setNotFound(false);
     setResult(null);
-    setTimeout(() => {
+
+    try {
+      const ticket = await ticketService.getTicketById(q);
+      setResult(ticket);
+    } catch (err) {
+      console.error(err);
+      setNotFound(true);
+    } finally {
       setSearching(false);
-      const found = SAMPLE_TICKETS.find(
-        t => t.ticket_id.toUpperCase() === q || t.order_id.toUpperCase() === q
-      );
-      if (found) setResult(found);
-      else setNotFound(true);
-    }, 700);
+    }
   };
 
   const currentStep = result ? (STATUS_ORDER[result.status] ?? 0) : 0;
@@ -256,19 +260,22 @@ export const TrackPage = () =>{
                   {/* Issue details */}
                   <div className="trk-card">
                     <div className="trk-card-title"><FileText size={14} /> Issue Details</div>
-                    <p className="trk-description">{result.description}</p>
-                    {result.fault_type && (
+                    <p className="trk-description">{result.description || "N/A"}</p>
+
+                    {result.fault_type && result.fault_type !== "string" && (
                       <div className="trk-info-row">
                         <span className="trk-info-label">Fault Type</span>
                         <span className="trk-info-val">{result.fault_type}</span>
                       </div>
                     )}
-                    {result.fault_notes && (
+
+                    {result.fault_notes && result.fault_notes !== "string" && (
                       <div className="trk-info-row trk-info-row-col">
                         <span className="trk-info-label">Technician Notes</span>
                         <span className="trk-info-val">{result.fault_notes}</span>
                       </div>
                     )}
+
                     {result.work_done_notes && result.work_done_notes !== "string" && (
                       <div className="trk-info-row trk-info-row-col">
                         <span className="trk-info-label">Work Done</span>
@@ -278,44 +285,63 @@ export const TrackPage = () =>{
                   </div>
 
                   {/* Parts */}
-                  {(result.predicted_parts?.length > 0 || result.actual_parts_used?.length > 0) && (
+                  {(result.predicted_parts?.length > 0 || result.actual_parts_used?.filter(p => p && p !== "string").length > 0) && (
                     <div className="trk-card">
                       <div className="trk-card-title"><Package size={14} /> Parts & Materials</div>
-                      {result.predicted_parts?.length > 0 && (
-                        <>
-                          <div className="trk-parts-section-label">Predicted Parts</div>
-                          {result.predicted_parts.map((p, i) => (
+
+                      {/* Predicted Parts */}
+                      <div className="trk-parts-section">
+                        <div className="trk-parts-section-label">Predicted Parts</div>
+                        {result.predicted_parts?.length > 0 ? (
+                          result.predicted_parts.map((p, i) => (
                             <div key={i} className="trk-part-row">
                               <div>
-                                <div className="trk-part-name">{p.name}</div>
-                                <div className="trk-part-id">{p.part_id}</div>
+                                <div className="trk-part-name">{p.name || "N/A"}</div>
+                                <div className="trk-part-id">{p.part_id || "N/A"}</div>
                               </div>
                               <div className="trk-part-right">
-                                <span className={`trk-stock-badge ${p.stock === "IN_STOCK" ? "in" : p.stock === "OUT_OF_STOCK" ? "out" : "unknown"}`}>
+                                <span
+                                  className={`trk-stock-badge ${
+                                    p.stock === "IN_STOCK" ? "in" : p.stock === "OUT_OF_STOCK" ? "out" : "unknown"
+                                  }`}
+                                >
                                   {p.stock === "IN_STOCK" ? "In Stock" : p.stock === "OUT_OF_STOCK" ? "Out of Stock" : "Checking"}
                                 </span>
                                 {p.cost > 0 && <span className="trk-part-cost">RM {p.cost}</span>}
                               </div>
                             </div>
-                          ))}
+                          ))
+                        ) : (
+                          <div className="trk-part-empty">— No predicted parts —</div>
+                        )}
+
+                        {/* Approval Status */}
+                        {result.predicted_parts?.length > 0 && (
                           <div className="trk-parts-approved">
                             {result.parts_approved
                               ? <><CheckCircle size={12} color="#16a34a" /> Parts approved</>
                               : <><Clock size={12} color="#d97706" /> Pending approval</>}
                           </div>
-                        </>
-                      )}
-                      {result.actual_parts_used?.filter(p => p !== "string").length > 0 && (
-                        <>
-                          <div className="trk-parts-section-label" style={{ marginTop: 12 }}>Parts Used</div>
-                          {result.actual_parts_used.filter(p => p !== "string").map((p, i) => (
-                            <div key={i} className="trk-used-part"><CheckCircle size={11} color="#16a34a" /> {p}</div>
-                          ))}
-                        </>
+                        )}
+                      </div>
+
+                      {/* Actual Parts Used */}
+                      {result.actual_parts_used?.filter(p => p && p !== "string").length > 0 && (
+                        <div className="trk-parts-section" style={{ marginTop: 12 }}>
+                          <div className="trk-parts-section-label">Parts Used</div>
+                          {result.actual_parts_used
+                            .filter(p => p && p !== "string")
+                            .map((p, i) => (
+                              <div key={i} className="trk-used-part">
+                                <CheckCircle size={11} color="#16a34a" /> {p}
+                              </div>
+                            ))
+                          }
+                        </div>
                       )}
                     </div>
                   )}
-
+                  
                   {/* AI Activity Log */}
                   {result.notes?.filter(n => n.note !== "string").length > 0 && (
                     <div className="trk-card">
@@ -344,7 +370,7 @@ export const TrackPage = () =>{
                     <div className="trk-card-title"><Wrench size={14} /> Service Info</div>
                     {[
                       { label: "Technician", value: result.assigned_tech_id },
-                      { label: "Priority", value: result.priority || "—" },
+                      { label: "Priority", value: result.urgency_level || "—" },
                       { label: "Created", value: fmtDate(result.created_at) },
                       { label: "SLA Deadline", value: fmtDate(result.sla_deadline_at), alert: slaBreached },
                       { label: "Last Updated", value: fmtDate(result.updated_at) },
