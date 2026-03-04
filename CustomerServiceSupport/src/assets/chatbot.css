@@ -642,3 +642,164 @@ button{
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ============================================================
+   LIVE AGENT HANDOFF — append these rules to chatbot.css
+   ============================================================ */
+
+/* ── Header: agent variant ───────────────────────────────────
+   Shifts from blue gradient → purple gradient to signal the
+   conversation owner has changed.                            */
+.fcb-header-agent {
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+}
+
+/* ── Agent avatar in header / messages ───────────────────── */
+.fcb-avatar-human {
+  /* background set inline via LIVE_AGENT.color */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+}
+.fcb-initials {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Pulsing green dot on live-agent header avatar */
+.fcb-avatar-dot-live {
+  background: #4ade80;
+  animation: fcbLivePulse 2s ease-in-out infinite;
+}
+@keyframes fcbLivePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(74, 222, 128, 0);  }
+}
+
+/* ── Agent avatar in message list ────────────────────────── */
+.fcb-agent-av {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  /* background set inline */
+}
+
+/* ── Agent name tag above bubble ─────────────────────────── */
+.fcb-agent-name-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 3px;
+}
+.fcb-agent-live-dot {
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  display: inline-block;
+  animation: fcbLivePulse 2s ease-in-out infinite;
+}
+
+/* ── Agent message bubble ────────────────────────────────── */
+.fcb-bubble-agent {
+  background: #f5f3ff;            /* light purple tint */
+  border: 1.5px solid #ddd6fe;
+  color: #1e1b4b;
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+}
+
+/* ── Handoff action block (call button + hint) ───────────── */
+.fcb-handoff-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  animation: fcbFadeUp 0.4s ease both;
+}
+
+.fcb-call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  align-self: flex-start;
+}
+.fcb-call-btn:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+}
+.fcb-call-btn:active {
+  transform: translateY(0);
+}
+
+.fcb-handoff-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ── Escalated status bar (replaces the input box) ──────── */
+.fcb-escalated-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f5f3ff;
+  border-top: 1px solid #ddd6fe;
+  flex-shrink: 0;
+  animation: fcbFadeUp 0.3s ease both;
+}
+.fcb-escalated-icon {
+  width: 30px;
+  height: 30px;
+  background: #ede9fe;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7c3aed;
+  flex-shrink: 0;
+}
+.fcb-escalated-text {
+  font-size: 12px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+.fcb-escalated-text strong {
+  color: #7c3aed;
+}
+
+/* ── Footer: agent mode ──────────────────────────────────── */
+/* (no extra class needed — the conditional in JSX handles it) */
+
+/* ── Shared entrance animation ───────────────────────────── */
+@keyframes fcbFadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
