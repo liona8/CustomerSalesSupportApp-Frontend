@@ -156,11 +156,11 @@ export const TrackPage = () =>{
             <div className="trk-search-title">
               <Search size={16} color="var(--brand)" /> Find your service ticket
             </div>
-            <p className="trk-search-sub">Enter your Ticket ID (e.g. TKT-5679) or Order ID (e.g. ORD-1005)</p>
+            <p className="trk-search-sub">Enter your Ticket ID (e.g. TKT-5679)</p>
             <div className="trk-search-row">
               <input
                 className="form-input trk-input"
-                placeholder="TKT-XXXX  or  ORD-XXXX"
+                placeholder="TKT-XXXX"
                 value={trackId}
                 onChange={e => setTrackId(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleTrack()}

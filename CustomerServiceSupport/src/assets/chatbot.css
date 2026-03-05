@@ -803,3 +803,209 @@ button{
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0);   }
 }
+
+/* ============================================================
+   MULTILANGUAGE VOICE PICKER — append to chatbot.css
+   ============================================================ */
+
+/* ── Language button in header ───────────────────────────────
+   Sits beside the mic toggle, shows flag + chevron           */
+.fcb-lang-wrap {
+  position: relative;
+}
+.fcb-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px !important;
+  min-width: 36px;
+}
+.fcb-lang-flag-sm {
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* ── Dropdown panel ──────────────────────────────────────────*/
+.fcb-lang-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 230px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+  z-index: 100;
+  overflow: hidden;
+  animation: fcbLangIn 0.2s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+@keyframes fcbLangIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* Header row */
+.fcb-lang-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Currently selected row */
+.fcb-lang-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #f0f9ff;
+  border-bottom: 1px solid #e0f2fe;
+  font-size: 12px;
+}
+.fcb-lang-current-label {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+.fcb-lang-current-val {
+  font-weight: 700;
+  color: #0284c7;
+}
+
+/* Search input */
+.fcb-lang-search-wrap {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.fcb-lang-search {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 13px;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+.fcb-lang-search:focus {
+  border-color: #1d5fb3;
+  background: #fff;
+}
+.fcb-lang-search::placeholder { color: #9ca3af; }
+
+/* Scrollable list */
+.fcb-lang-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px 0 8px;
+}
+.fcb-lang-list::-webkit-scrollbar { width: 3px; }
+.fcb-lang-list::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+
+/* Region group header */
+.fcb-lang-region {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  padding: 8px 14px 4px;
+}
+
+/* Language option row */
+.fcb-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+.fcb-lang-option:hover { background: #f3f4f6; }
+.fcb-lang-option.fcb-lang-active { background: #eff6ff; }
+
+.fcb-lang-flag {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.fcb-lang-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.fcb-lang-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fcb-lang-code {
+  font-size: 10px;
+  color: #9ca3af;
+  font-family: monospace;
+}
+.fcb-lang-check { color: #1d5fb3; flex-shrink: 0; }
+
+/* Empty state */
+.fcb-lang-empty {
+  padding: 20px 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* ── Voice mode — language bar ────────────────────────────── */
+.fcb-voice-lang-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f8faff;
+  border-bottom: 1px solid #e5e7eb;
+  color: #6b7280;
+}
+.fcb-voice-lang-label {
+  font-size: 12px;
+  color: #9ca3af;
+}
+.fcb-voice-lang-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #dbeafe;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d5fb3;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fcb-voice-lang-chip:hover {
+  background: #eff6ff;
+  border-color: #1d5fb3;
+}
+
+/* ── Listening strip — language badge ────────────────────── */
+.fcb-strip-lang-badge {
+  font-size: 14px;
+  flex-shrink: 0;
+}

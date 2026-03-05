@@ -169,7 +169,17 @@ export const ProductsPage = ({ setPage }) => {
 
   const toggleWishlist = (id) => setWishlist(w => w.includes(id) ? w.filter(x => x !== id) : [...w, id]);
 
-  if (selected) return <ProductDetail product={selected} onBack={() => setSelected(null)} setPage={setPage} onWishlist={toggleWishlist} wishlisted={wishlist.includes(selected.id)} />;
+  if (selected)
+    return (
+      <ProductDetail
+        product={selected}
+        products={products}   // ✅ pass real data
+        onBack={() => setSelected(null)}
+        setPage={setPage}
+        onWishlist={toggleWishlist}
+        wishlisted={wishlist.includes(selected.id)}
+      />
+    );
 
   return (
     <>

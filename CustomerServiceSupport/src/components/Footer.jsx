@@ -6,13 +6,13 @@ export const Footer = ({ setPage }) => {
       <div className="container">
         <div className="footer-inner">
           <div>
-            <div className="footer-brand-name">ServiceHub</div>
+            <div className="footer-brand-name">Fiamma Customer Guardian</div>
             <p className="footer-desc">Fast, reliable customer service for your home appliances. We're here when you need us.</p>
           </div>
           <div>
             <div className="footer-col-title">Support</div>
             <div className="footer-links">
-              {["FAQ", "Track Request", "Warranty Check", "Spare Parts"].map(l => (
+              {["FAQ", "Track Request", "Warranty Check"].map(l => (
                 <button key={l} className="footer-link" onClick={() => setPage("support")}>{l}</button>
               ))}
             </div>
@@ -35,7 +35,7 @@ export const Footer = ({ setPage }) => {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 ServiceHub. All rights reserved.</span>
+          <span>© 2026 Fiamma Customer Guardian. All rights reserved.</span>
           {/* <span>Built for better customer experiences.</span> */}
         </div>
       </div>

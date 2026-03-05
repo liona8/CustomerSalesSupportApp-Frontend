@@ -16,7 +16,7 @@ export const Header = ({ activePage, setPage }) => {
             <div className="nav-logo-icon">
               <Headphones size={18} />
             </div>
-            <span className="nav-logo-text">Service<span>Hub</span></span>
+            <span className="nav-logo-text">Fiamma <span>Customer Guardian</span></span>
           </div>
 
           <div className="nav-links">
