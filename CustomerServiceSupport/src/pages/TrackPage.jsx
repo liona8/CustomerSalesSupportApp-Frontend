@@ -7,62 +7,13 @@ import { ticketService } from "../service/ticket";
 
 const SAMPLE_TICKETS = [
   {
-    id: "7e69b114-45i9-4g64-cg5d-9fegd4354444",
-    ticket_id: "TKT-5679", order_id: "ORD-1005",
-    subject: "Washing machine making loud noise during spin cycle",
-    description: "FrontLoad Pro 7800 started making grinding noise during high-speed spin. Unit is still under warranty.",
-    status: "COMPLETED",
-    created_at: "2026-02-20T09:30:00+08:00",
-    customer_name: "Siti Nurhaliza", customer_email: "siti.nur@email.com",
-    warranty_status: "UNDER_WARRANTY", urgency_level: "STANDARD", priority: "Medium",
-    assigned_tech_id: "TECH-001",
-    sla_deadline_at: "2026-02-22T09:30:00+08:00",
-    fault_type: "Mechanical – Bearing/Motor", fault_notes: "Grinding noise confirmed during 1200RPM spin cycle. Drum bearing worn.",
-    predicted_parts: [{ part_id: "P-MISC", name: "General Inspection Kit", stock: "UNKNOWN", cost: 50 }],
-    parts_approved: true, charge_applicable: false,
-    completed_at: "2026-03-03T01:41:03+08:00",
-    compensation_code: "COMP-T-5679-3FEC",
-    work_done_notes: "Replaced drum bearing assembly. Unit tested and running normally at all spin speeds.",
-    actual_parts_used: ["Drum Bearing Assembly WM-7800", "Lubricant Kit"],
-    notes: [
-      { note: "Customer contacted re: appointment scheduling.", addedAt: "2026-03-02T23:47:06+08:00", addedBy: "AI Agent" },
-      { note: "Technician completed repair. Compensation code issued due to SLA delay.", addedAt: "2026-03-03T01:36:22+08:00", addedBy: "AI Agent" },
-    ],
-    updated_at: "2026-03-03T01:41:03+08:00",
+    ticket_id: "TKT-5679"
   },
   {
-    id: "8f70c225-56j0-4h75-dh6e-afheg5465555",
-    ticket_id: "TKT-5680", order_id: "ORD-1006",
-    subject: "Refrigerator not cooling properly",
-    description: "FreshKeep refrigerator temperature fluctuating. Fresh food section at 15°C instead of 4°C.",
-    status: "ASSIGNED",
-    created_at: "2026-01-10T14:15:00+08:00",
-    customer_name: "Jason Tan", customer_email: "jason.tan@email.com",
-    warranty_status: "EXPIRED", urgency_level: "STANDARD", priority: "Medium",
-    assigned_tech_id: "TECH-001",
-    sla_deadline_at: "2026-01-12T14:15:00+08:00",
-    fault_type: null, fault_notes: null,
-    predicted_parts: [], parts_approved: false, charge_applicable: true,
-    completed_at: null, compensation_code: null, work_done_notes: null, actual_parts_used: [],
-    notes: [{ note: "Ticket assigned to technician. Awaiting site visit confirmation.", addedAt: "2026-03-03T00:01:29+08:00", addedBy: "AI Agent" }],
-    updated_at: "2026-03-03T00:01:29+08:00",
+    ticket_id: "TKT-5680"
   },
   {
-    id: "9g81d336-67k1-4i86-ei7f-bgihf6576666",
-    ticket_id: "TKT-5681", order_id: "ORD-1007",
-    subject: "Air conditioner not cooling - clinic environment",
-    description: "CoolMax Inverter unit blowing warm air. Affects medication storage area. Requesting immediate service.",
-    status: "JOB_STARTED",
-    created_at: "2026-03-01T08:45:00+08:00",
-    customer_name: "Dr. Lim Wei Ming", customer_email: "limwm@clinic.com",
-    warranty_status: "UNDER_WARRANTY", urgency_level: "CRITICAL", priority: "High",
-    assigned_tech_id: "TECH-001",
-    sla_deadline_at: "2026-03-01T16:45:00+08:00",
-    fault_type: null, fault_notes: null,
-    predicted_parts: [], parts_approved: false, charge_applicable: false,
-    completed_at: null, compensation_code: null, work_done_notes: null, actual_parts_used: [],
-    notes: [],
-    updated_at: "2026-03-03T02:19:02+08:00",
+    ticket_id: "TKT-5681"
   },
 ];
 
@@ -109,7 +60,7 @@ const URGENCY_META = {
 };
 
 
-export const TrackPage = () =>{
+export default function TrackPage({ openChatWithMessage }) {
   const [trackId, setTrackId] = useState("");
   const [result, setResult] = useState(null);
   const [searching, setSearching] = useState(false);
@@ -408,7 +359,11 @@ export const TrackPage = () =>{
                     <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
                       Have questions about this ticket? Chat with our support team directly.
                     </p>
-                    <button className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                    <button
+                      className="btn-primary"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={() => openChatWithMessage(`Hi, I have a question about ticket ${result.ticket_id}`)}
+                    >
                       <MessageCircle size={14} /> Chat about {result.ticket_id}
                     </button>
                   </div>

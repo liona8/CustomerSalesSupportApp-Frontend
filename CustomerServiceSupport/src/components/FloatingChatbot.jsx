@@ -54,7 +54,7 @@ function isHandoffMessage(text = "") {
 
 const LANG_REGIONS = [...new Set(VOICE_LANGUAGES.map(l => l.region))];
 
-export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
+export const FloatingChatbot = ({ isOpen, setIsOpen, initialMessage, clearInitialMessage }) => {
   const [messages,    setMessages]   = useState([{
     id: 1, from: "bot",
     text: "👋 Hi there! I'm your Fiamma Service customer service assistant. How can I help you today?",
@@ -91,9 +91,9 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      setUnread(0); setMinimised(false);
-      setTimeout(() => inputRef.current?.focus(), 150);
+    if (isOpen && initialMessage) {
+      sendMessage(initialMessage);
+      clearInitialMessage();  // reset so it doesn't re-fire
     }
   }, [isOpen]);
 
