@@ -57,7 +57,7 @@ const LANG_REGIONS = [...new Set(VOICE_LANGUAGES.map(l => l.region))];
 export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
   const [messages,    setMessages]   = useState([{
     id: 1, from: "bot",
-    text: "👋 Hi there! I'm your ServiceHub assistant. How can I help you today?",
+    text: "👋 Hi there! I'm your Fiamma Service customer service assistant. How can I help you today?",
     time: getTime(),
   }]);
   const [input,        setInput]        = useState("");
@@ -126,7 +126,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
         setMessages(m => [...m, {
           id: Date.now(), from: "agent", isHandoffIntro: true,
           text:
-            `Hi, I'm ${LIVE_AGENT.name} — ${LIVE_AGENT.role} at ServiceHub. ` +
+            `Hi, I'm ${LIVE_AGENT.name} — ${LIVE_AGENT.role} at Fiamma Customer Service. ` +
             `I've reviewed your conversation and fully understand the issue you're facing. ` +
             `You have my complete attention and I'll personally make sure this gets resolved for you. 😊\n\n` +
             `How would you like to proceed?`,
@@ -162,7 +162,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
     if (!SR) return;
     setVoiceError("");
     const r            = new SR();
-    r.lang            = lang.code;   // ← the selected language
+    r.lang            = lang.code;
     r.continuous      = false;
     r.interimResults  = true;
     r.maxAlternatives = 1;
@@ -200,7 +200,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
     setIsListening(false);
   };
 
-  const toggleVoice = () => isListening ? stopListening() : startListening();
+  const toggleVoice = () => isListening ? stopListening() : startListening(selectedLang);
 
   const selectLanguage = (lang) => {
     setSelectedLang(lang);
@@ -266,7 +266,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
                     <span className="fcb-avatar-dot" />
                   </div>
                   <div>
-                    <div className="fcb-name">ServiceHub AI</div>
+                    <div className="fcb-name">Fiamma Customer Guardian AI</div>
                     <div className="fcb-status"><span className="fcb-online-dot" /> Online now</div>
                   </div>
                 </>
@@ -490,7 +490,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
                       </div>
                     ) : (
                       <div className="fcb-idle-state">
-                        <button className="fcb-mic-btn" onClick={startListening}>
+                        <button className="fcb-mic-btn" onClick={() => startListening(selectedLang)}>
                           <Mic size={22} />
                         </button>
                         <div className="fcb-voice-label">Tap to speak</div>
@@ -548,7 +548,7 @@ export const FloatingChatbot = ({ isOpen, setIsOpen }) => {
                 <Lock size={10} />
                 {isEscalated
                   ? <> Secured · Now with <strong>{LIVE_AGENT.name}</strong></>
-                  : <> Encrypted &amp; private · ServiceHub AI</>}
+                  : <> Encrypted &amp; private · Fiamma AI</>}
                 {voiceSupported && !isEscalated && (
                   <span className="fcb-foot-voice"> · 🎤 {selectedLang.flag} {selectedLang.label}</span>
                 )}
