@@ -60,7 +60,7 @@ const URGENCY_META = {
 };
 
 
-export default function TrackPage({ openChatWithMessage }) {
+export const TrackPage = ({ openChatWithMessage }) => {
   const [trackId, setTrackId] = useState("");
   const [result, setResult] = useState(null);
   const [searching, setSearching] = useState(false);
