@@ -28,7 +28,6 @@ const VOICE_LANGUAGES = [
   { code: "en-MY", label: "English (Malaysia)",   flag: "🇲🇾", region: "Southeast Asia" },
   { code: "ms-MY", label: "Bahasa Malaysia",       flag: "🇲🇾", region: "Southeast Asia" },
   { code: "zh-CN", label: "中文 (普通话)",          flag: "🇨🇳", region: "East Asia" },
-  { code: "zh-TW", label: "中文 (繁體)",            flag: "🇹🇼", region: "East Asia" }
 ];
 
 const DEFAULT_LANG = VOICE_LANGUAGES[0]; // en-MY
