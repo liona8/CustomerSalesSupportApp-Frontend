@@ -90,27 +90,21 @@ h1, h2, h3 { font-family: 'Fraunces', serif; line-height: 1.2; }
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-.nav-logo-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--brand);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+.nav-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
   flex-shrink: 0;
 }
-.nav-logo-text {
-  font-family: 'Fraunces', serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
+.nav-logo-subtext {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  letter-spacing: 0.02em;
 }
-.nav-logo-text span { color: var(--brand); }
 .nav-links {
   display: flex;
   align-items: center;
@@ -1065,12 +1059,28 @@ h1, h2, h3 { font-family: 'Fraunces', serif; line-height: 1.2; }
   gap: 40px;
   margin-bottom: 40px;
 }
-.footer-brand-name {
-  font-family: 'Fraunces', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 10px;
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.footer-logo-img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px;
+}
+.footer-brand-subname {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  letter-spacing: 0.02em;
 }
 .footer-desc { font-size: 13px; line-height: 1.7; max-width: 260px; }
 .footer-col-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); margin-bottom: 14px; }

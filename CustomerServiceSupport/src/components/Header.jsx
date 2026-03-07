@@ -1,5 +1,5 @@
 //src/components/Header.jsx
-import { Headphones, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 const PAGES = {
   HOME: "home",
@@ -13,10 +13,7 @@ export const Header = ({ activePage, setPage }) => {
       <div className="container">
         <nav className="nav">
           <div className="nav-logo" onClick={() => setPage("home")} style={{ cursor: "pointer" }}>
-            <div className="nav-logo-icon">
-              <Headphones size={18} />
-            </div>
-            <span className="nav-logo-text">Fiamma <span>Customer Guardian</span></span>
+            <img src="/fiamma_logo.png" alt="Fiamma" className="nav-logo-img" />
           </div>
 
           <div className="nav-links">

@@ -6,7 +6,10 @@ export const Footer = ({ setPage }) => {
       <div className="container">
         <div className="footer-inner">
           <div>
-            <div className="footer-brand-name">Fiamma Customer Guardian</div>
+            <div className="footer-brand">
+              <img src="/fiamma_logo.png" alt="Fiamma" className="footer-logo-img" />
+              <div className="footer-brand-subname">Customer Guardian</div>
+            </div>
             <p className="footer-desc">Fast, reliable customer service for your home appliances. We're here when you need us.</p>
           </div>
           <div>
