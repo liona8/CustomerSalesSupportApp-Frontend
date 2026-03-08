@@ -1,79 +1,179 @@
 //src/pages/TrackPage.jsx
 import { useState } from "react";
-import { AlertCircle, Bot, CheckCircle, Clock, CreditCard, FileText, Gift, Hash, HelpCircle, MessageCircle, Package, RefreshCw, Search, Shield, User, Wrench, Zap } from "lucide-react";
+import {
+  AlertCircle, Bot, CheckCircle, Clock, CreditCard, FileText, Gift,
+  Hash, HelpCircle, MessageCircle, Package, RefreshCw, Search, Shield,
+  User, Wrench, Zap, Camera, ZoomIn, X, ChevronLeft, ChevronRight,
+} from "lucide-react";
 import '../assets/track.css';
 import { FeedbackPanel } from "../components/FeedbackPanel";
 import { ticketService } from "../service/ticket";
 
 const SAMPLE_TICKETS = [
-  {
-    ticket_id: "TKT-5679"
-  },
-  {
-    ticket_id: "TKT-5680"
-  },
-  {
-    ticket_id: "TKT-5681"
-  },
+  { ticket_id: "TKT-5679" },
+  { ticket_id: "TKT-5680" },
+  { ticket_id: "TKT-5681" },
 ];
 
-// Status pipeline config
 const STATUS_PIPELINE = [
-  { key: "CREATED",     label: "Ticket Created",       icon: FileText },
-  { key: "ASSIGNED",    label: "Technician Assigned",  icon: User },
-  { key: "JOB_STARTED", label: "Job In Progress",      icon: Wrench },
-  { key: "COMPLETED",   label: "Completed",            icon: CheckCircle },
+  { key: "CREATED",     label: "Ticket Created",      icon: FileText    },
+  { key: "ASSIGNED",    label: "Technician Assigned", icon: User        },
+  { key: "JOB_STARTED", label: "Job In Progress",     icon: Wrench      },
+  { key: "COMPLETED",   label: "Completed",           icon: CheckCircle },
 ];
 const STATUS_ORDER = { CREATED: 0, ASSIGNED: 1, JOB_STARTED: 2, COMPLETED: 3 };
 
 function fmtDate(iso) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-MY", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleString("en-MY", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
 }
-
 function fmtDateShort(iso) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-MY", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleString("en-MY", {
+    day: "2-digit", month: "short", year: "numeric",
+  });
 }
-
 function isSLABreached(ticket) {
   if (!ticket.sla_deadline_at || ticket.status === "COMPLETED") return false;
   return new Date() > new Date(ticket.sla_deadline_at);
 }
 
 const STATUS_META = {
-  COMPLETED:   { label: "Completed",        color: "#16a34a", bg: "#dcfce7" },
-  JOB_STARTED: { label: "Job In Progress",  color: "#1d5fb3", bg: "#dbeafe" },
-  ASSIGNED:    { label: "Assigned",         color: "#d97706", bg: "#fef3c7" },
-  CREATED:     { label: "Ticket Created",   color: "#6b7280", bg: "#f3f4f6" },
+  COMPLETED:   { label: "Completed",       color: "#16a34a", bg: "#dcfce7" },
+  JOB_STARTED: { label: "Job In Progress", color: "#1d5fb3", bg: "#dbeafe" },
+  ASSIGNED:    { label: "Assigned",        color: "#d97706", bg: "#fef3c7" },
+  CREATED:     { label: "Ticket Created",  color: "#6b7280", bg: "#f3f4f6" },
 };
-
 const WARRANTY_META = {
-  UNDER_WARRANTY: { label: "Under Warranty", color: "#16a34a", bg: "#dcfce7" },
+  UNDER_WARRANTY: { label: "Under Warranty",   color: "#16a34a", bg: "#dcfce7" },
   EXPIRED:        { label: "Warranty Expired", color: "#ef4444", bg: "#fee2e2" },
 };
-
 const URGENCY_META = {
   CRITICAL: { label: "Critical", color: "#dc2626", bg: "#fee2e2" },
   HIGH:     { label: "High",     color: "#d97706", bg: "#fef3c7" },
   STANDARD: { label: "Standard", color: "#2563eb", bg: "#dbeafe" },
 };
 
+// ── Lightbox component ────────────────────────────────────────
+function PhotoLightbox({ photos, startIndex, onClose }) {
+  const [current, setCurrent] = useState(startIndex);
 
+  const prev = () => setCurrent(i => (i - 1 + photos.length) % photos.length);
+  const next = () => setCurrent(i => (i + 1) % photos.length);
+
+  // Keyboard navigation
+  const handleKey = (e) => {
+    if (e.key === "ArrowLeft")  prev();
+    if (e.key === "ArrowRight") next();
+    if (e.key === "Escape")     onClose();
+  };
+
+  return (
+    <div className="trk-lightbox-overlay" onClick={onClose} onKeyDown={handleKey} tabIndex={0}
+      style={{ outline: "none" }} ref={el => el?.focus()}>
+      {/* Close */}
+      <button className="trk-lb-close" onClick={onClose}><X size={20} /></button>
+
+      {/* Counter */}
+      <div className="trk-lb-counter">{current + 1} / {photos.length}</div>
+
+      {/* Prev / Next arrows (only if multiple) */}
+      {photos.length > 1 && (
+        <>
+          <button className="trk-lb-arrow trk-lb-arrow-left"
+            onClick={e => { e.stopPropagation(); prev(); }}>
+            <ChevronLeft size={28} />
+          </button>
+          <button className="trk-lb-arrow trk-lb-arrow-right"
+            onClick={e => { e.stopPropagation(); next(); }}>
+            <ChevronRight size={28} />
+          </button>
+        </>
+      )}
+
+      {/* Image */}
+      <div className="trk-lb-img-wrap" onClick={e => e.stopPropagation()}>
+        <img src={photos[current]} alt={`Photo ${current + 1}`} className="trk-lb-img" />
+      </div>
+
+      {/* Thumbnails strip (only if multiple) */}
+      {photos.length > 1 && (
+        <div className="trk-lb-thumbs" onClick={e => e.stopPropagation()}>
+          {photos.map((url, i) => (
+            <button key={i}
+              className={`trk-lb-thumb-btn ${i === current ? "trk-lb-thumb-active" : ""}`}
+              onClick={() => setCurrent(i)}>
+              <img src={url} alt={`Thumb ${i + 1}`} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Photo gallery card ────────────────────────────────────────
+function PhotoGallery({ photos }) {
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  if (!photos?.length) return null;
+
+  return (
+    <>
+      <div className="trk-card">
+        <div className="trk-card-title">
+          <Camera size={14} /> Customer Photos
+          <span className="trk-photo-count-badge">{photos.length} photo{photos.length > 1 ? "s" : ""}</span>
+        </div>
+
+        <div className={`trk-photo-gallery trk-pg-${Math.min(photos.length, 4)}`}>
+          {photos.map((url, i) => {
+            // 4th tile shows "+N more" overlay if there are more
+            const isOverflow = i === 3 && photos.length > 4;
+            return (
+              <button key={i}
+                className={`trk-pg-tile ${isOverflow ? "trk-pg-tile-overflow" : ""}`}
+                onClick={() => setLightboxIndex(i)}
+                title={`View photo ${i + 1}`}
+              >
+                <img src={url} alt={`Attachment ${i + 1}`} className="trk-pg-img" />
+                <div className="trk-pg-overlay">
+                  <ZoomIn size={16} />
+                </div>
+                {isOverflow && (
+                  <div className="trk-pg-more-overlay">+{photos.length - 3}</div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
+    </>
+  );
+}
+
+// ── Main TrackPage ────────────────────────────────────────────
 export const TrackPage = ({ openChatWithMessage }) => {
-  const [trackId, setTrackId] = useState("");
-  const [result, setResult] = useState(null);
+  const [trackId,   setTrackId]   = useState("");
+  const [result,    setResult]    = useState(null);
   const [searching, setSearching] = useState(false);
-  const [notFound, setNotFound] = useState(false);
+  const [notFound,  setNotFound]  = useState(false);
 
   const handleTrack = async () => {
     const q = trackId.trim().toUpperCase();
     if (!q) return;
-
-    setSearching(true);
-    setNotFound(false);
-    setResult(null);
-
+    setSearching(true); setNotFound(false); setResult(null);
     try {
       const ticket = await ticketService.getTicketById(q);
       setResult(ticket);
@@ -87,6 +187,11 @@ export const TrackPage = ({ openChatWithMessage }) => {
 
   const currentStep = result ? (STATUS_ORDER[result.status] ?? 0) : 0;
   const slaBreached = result ? isSLABreached(result) : false;
+
+  // Normalise photo_urls — handle both string[] and object[] shapes
+  const photoUrls = (result?.photo_url ?? [])
+    .map(p => (typeof p === "string" ? p : p?.url ?? p?.dataUrl ?? null))
+    .filter(Boolean);
 
   return (
     <>
@@ -122,12 +227,11 @@ export const TrackPage = ({ openChatWithMessage }) => {
                   : <><Search size={14} /> Track</>}
               </button>
             </div>
-            {/* Quick-try chips */}
             <div className="trk-sample-chips">
               <span className="trk-chip-label">Try:</span>
               {SAMPLE_TICKETS.map(t => (
                 <button key={t.ticket_id} className="trk-chip"
-                  onClick={() => { setTrackId(t.ticket_id); }}>
+                  onClick={() => setTrackId(t.ticket_id)}>
                   {t.ticket_id}
                 </button>
               ))}
@@ -139,7 +243,9 @@ export const TrackPage = ({ openChatWithMessage }) => {
             <div className="trk-not-found">
               <AlertCircle size={32} color="#ef4444" />
               <div className="trk-nf-title">Ticket not found</div>
-              <div className="trk-nf-sub">No ticket matched "<strong>{trackId}</strong>". Please check the ID and try again.</div>
+              <div className="trk-nf-sub">
+                No ticket matched "<strong>{trackId}</strong>". Please check the ID and try again.
+              </div>
             </div>
           )}
 
@@ -180,14 +286,12 @@ export const TrackPage = ({ openChatWithMessage }) => {
               <div className="trk-pipeline-wrap">
                 <div className="trk-pipeline">
                   {STATUS_PIPELINE.map((step, i) => {
-                    const done = i <= currentStep;
+                    const done   = i <= currentStep;
                     const active = i === currentStep;
                     return (
                       <div key={step.key} className={`trk-step ${done ? "trk-step-done" : ""} ${active ? "trk-step-active" : ""}`}>
                         <div className="trk-step-icon-wrap">
-                          <div className="trk-step-icon">
-                            <step.icon size={14} />
-                          </div>
+                          <div className="trk-step-icon"><step.icon size={14} /></div>
                           {i < STATUS_PIPELINE.length - 1 && (
                             <div className={`trk-step-line ${done && i < currentStep ? "trk-line-done" : ""}`} />
                           )}
@@ -205,28 +309,25 @@ export const TrackPage = ({ openChatWithMessage }) => {
               {/* ── Detail grid ── */}
               <div className="trk-detail-grid">
 
-                {/* Left column */}
+                {/* ── Left column ── */}
                 <div className="trk-detail-left">
 
                   {/* Issue details */}
                   <div className="trk-card">
                     <div className="trk-card-title"><FileText size={14} /> Issue Details</div>
                     <p className="trk-description">{result.description || "N/A"}</p>
-
                     {result.fault_type && result.fault_type !== "string" && (
                       <div className="trk-info-row">
                         <span className="trk-info-label">Fault Type</span>
                         <span className="trk-info-val">{result.fault_type}</span>
                       </div>
                     )}
-
                     {result.fault_notes && result.fault_notes !== "string" && (
                       <div className="trk-info-row trk-info-row-col">
                         <span className="trk-info-label">Technician Notes</span>
                         <span className="trk-info-val">{result.fault_notes}</span>
                       </div>
                     )}
-
                     {result.work_done_notes && result.work_done_notes !== "string" && (
                       <div className="trk-info-row trk-info-row-col">
                         <span className="trk-info-label">Work Done</span>
@@ -235,12 +336,13 @@ export const TrackPage = ({ openChatWithMessage }) => {
                     )}
                   </div>
 
+                  {/* ── Customer Photos ── renders only if photos exist */}
+                  <PhotoGallery photos={photoUrls} />
+
                   {/* Parts */}
                   {(result.predicted_parts?.length > 0 || result.actual_parts_used?.filter(p => p && p !== "string").length > 0) && (
                     <div className="trk-card">
                       <div className="trk-card-title"><Package size={14} /> Parts & Materials</div>
-
-                      {/* Predicted Parts */}
                       <div className="trk-parts-section">
                         <div className="trk-parts-section-label">Predicted Parts</div>
                         {result.predicted_parts?.length > 0 ? (
@@ -251,11 +353,9 @@ export const TrackPage = ({ openChatWithMessage }) => {
                                 <div className="trk-part-id">{p.part_id || "N/A"}</div>
                               </div>
                               <div className="trk-part-right">
-                                <span
-                                  className={`trk-stock-badge ${
-                                    p.stock === "IN_STOCK" ? "in" : p.stock === "OUT_OF_STOCK" ? "out" : "unknown"
-                                  }`}
-                                >
+                                <span className={`trk-stock-badge ${
+                                  p.stock === "IN_STOCK" ? "in" : p.stock === "OUT_OF_STOCK" ? "out" : "unknown"
+                                }`}>
                                   {p.stock === "IN_STOCK" ? "In Stock" : p.stock === "OUT_OF_STOCK" ? "Out of Stock" : "Checking"}
                                 </span>
                                 {p.cost > 0 && <span className="trk-part-cost">RM {p.cost}</span>}
@@ -265,8 +365,6 @@ export const TrackPage = ({ openChatWithMessage }) => {
                         ) : (
                           <div className="trk-part-empty">— No predicted parts —</div>
                         )}
-
-                        {/* Approval Status */}
                         {result.predicted_parts?.length > 0 && (
                           <div className="trk-parts-approved">
                             {result.parts_approved
@@ -275,25 +373,20 @@ export const TrackPage = ({ openChatWithMessage }) => {
                           </div>
                         )}
                       </div>
-
-                      {/* Actual Parts Used */}
                       {result.actual_parts_used?.filter(p => p && p !== "string").length > 0 && (
                         <div className="trk-parts-section" style={{ marginTop: 12 }}>
                           <div className="trk-parts-section-label">Parts Used</div>
-                          {result.actual_parts_used
-                            .filter(p => p && p !== "string")
-                            .map((p, i) => (
-                              <div key={i} className="trk-used-part">
-                                <CheckCircle size={11} color="#16a34a" /> {p}
-                              </div>
-                            ))
-                          }
+                          {result.actual_parts_used.filter(p => p && p !== "string").map((p, i) => (
+                            <div key={i} className="trk-used-part">
+                              <CheckCircle size={11} color="#16a34a" /> {p}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
                   )}
-                  
-                  {/* AI Activity Log */}
+
+                  {/* Activity Log */}
                   {result.notes?.filter(n => n.note !== "string").length > 0 && (
                     <div className="trk-card">
                       <div className="trk-card-title"><Bot size={14} /> Activity Log</div>
@@ -313,19 +406,19 @@ export const TrackPage = ({ openChatWithMessage }) => {
                   )}
                 </div>
 
-                {/* Right column */}
+                {/* ── Right column ── */}
                 <div className="trk-detail-right">
 
                   {/* Service info */}
                   <div className="trk-card">
                     <div className="trk-card-title"><Wrench size={14} /> Service Info</div>
                     {[
-                      { label: "Technician", value: result.assigned_tech_id },
-                      { label: "Priority", value: result.urgency_level || "—" },
-                      { label: "Created", value: fmtDate(result.created_at) },
+                      { label: "Technician",   value: result.assigned_tech_id },
+                      { label: "Priority",     value: result.urgency_level || "—" },
+                      { label: "Created",      value: fmtDate(result.created_at) },
                       { label: "SLA Deadline", value: fmtDate(result.sla_deadline_at), alert: slaBreached },
                       { label: "Last Updated", value: fmtDate(result.updated_at) },
-                      { label: "Completed", value: result.completed_at ? fmtDate(result.completed_at) : "—" },
+                      { label: "Completed",    value: result.completed_at ? fmtDate(result.completed_at) : "—" },
                     ].map((row, i) => (
                       <div key={i} className="trk-info-row">
                         <span className="trk-info-label">{row.label}</span>
@@ -370,15 +463,14 @@ export const TrackPage = ({ openChatWithMessage }) => {
                 </div>
               </div>
 
-              {/* ── Feedback Section (COMPLETED only) ── */}
+              {/* ── Feedback (COMPLETED only) ── */}
               {result.status === "COMPLETED" && (
                 <FeedbackPanel ticketId={result.ticket_id} />
               )}
-
             </div>
           )}
         </div>
       </section>
     </>
   );
-}
+};
